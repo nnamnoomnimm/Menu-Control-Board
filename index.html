@@ -1,0 +1,1855 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Menu Control Board — Catering Team</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:url('bg-dashboard.png') center center / cover fixed no-repeat;background-color:#f5f5f3;color:#1a1a1a;font-size:15px}
+.topbar{background:rgba(255,255,255,.82);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);border-bottom:.5px solid #e0e0d8;padding:12px 24px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:200;gap:12px;flex-wrap:wrap}
+.topbar-title{font-size:16px;font-weight:500}
+.topbar-date{font-size:12px;color:#888;margin-top:1px}
+.topbar-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.save-status{font-size:12px;color:#888}
+.tb-btn{font-size:12px;padding:5px 12px;border:.5px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;color:#444}
+.tb-btn:hover{background:#f5f5f3}
+.tag-pl{background:#E6F1FB;color:#185FA5;font-size:11px;padding:3px 12px;border-radius:20px;font-weight:500}
+.tag-wp{background:#FBEAF0;color:#993556;font-size:11px;padding:3px 12px;border-radius:20px;font-weight:500}
+.container{max-width:1140px;margin:0 auto;padding:20px}
+.metric-row{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:20px}
+.metric{background:#fff;border-radius:10px;border:.5px solid #e0e0d8;padding:14px 16px}
+.metric-label{font-size:12px;color:#888;margin-bottom:4px}
+.metric-val{font-size:24px;font-weight:500}
+.metric-sub{font-size:11px;color:#aaa;margin-top:2px}
+.tabs{display:flex;border-bottom:.5px solid #e0e0d8;margin-bottom:20px;background:#fff;border-radius:10px 10px 0 0;padding:0 8px;flex-wrap:wrap}
+.tab{padding:11px 14px;font-size:13px;cursor:pointer;border-bottom:2px solid transparent;color:#888;background:none;border-top:none;border-left:none;border-right:none;font-family:inherit;white-space:nowrap}
+.tab.active{color:#1a1a1a;border-bottom:2px solid #1a1a1a;font-weight:500}
+.tab:hover:not(.active){color:#1a1a1a}
+.page{display:none}.page.active{display:block}
+.card{background:rgba(255,255,255,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:.5px solid #e0e0d8;border-radius:10px;padding:16px 20px;margin-bottom:12px}
+.section-title{font-size:11px;font-weight:500;color:#aaa;margin-bottom:12px;letter-spacing:.06em;text-transform:uppercase}
+.badge{display:inline-block;font-size:11px;padding:2px 8px;border-radius:4px;font-weight:500}
+.b-overdue{background:#FAECE7;color:#993C1D}.b-pending{background:#FAEEDA;color:#854F0B}
+.b-done{background:#EAF3DE;color:#3B6D11}.b-waitchef{background:#F1EFE8;color:#5F5E5A}
+.b-public{background:#E6F1FB;color:#185FA5}.b-stuck{background:#FBEAF0;color:#993556}
+.b-urgent{background:#FAECE7;color:#993C1D}.b-medium{background:#FAEEDA;color:#854F0B}.b-low{background:#EAF3DE;color:#3B6D11}
+select.pill{appearance:none;-webkit-appearance:none;border:none;outline:none;cursor:pointer;font-family:inherit;font-weight:500;padding:4px 22px 4px 9px;border-radius:20px;font-size:12px;background-repeat:no-repeat;background-position:right 6px center;background-size:10px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23888'/%3E%3C/svg%3E")}
+select.pill.t-pl{background-color:#E6F1FB;color:#185FA5}
+select.pill.t-wp{background-color:#FBEAF0;color:#993556}
+select.pill.t-week{background-color:#f0f0ec;color:#444}
+select.pill.s-overdue{background-color:#FAECE7;color:#993C1D}
+select.pill.s-pending{background-color:#FAEEDA;color:#854F0B}
+select.pill.s-done{background-color:#EAF3DE;color:#3B6D11}
+select.pill.s-waitchef{background-color:#F1EFE8;color:#5F5E5A}
+select.pill.s-public{background-color:#E6F1FB;color:#185FA5}
+select.pill.s-stuck{background-color:#FBEAF0;color:#993556}
+select.pill.a-me{background-color:#E6F1FB;color:#185FA5}
+select.pill.a-jr{background-color:#FBEAF0;color:#993556}
+.wtag{font-size:11px;padding:2px 6px;border-radius:3px;background:#f0f0ec;color:#666;display:inline-block}
+.code-tag{font-size:10px;font-weight:500;padding:2px 6px;border-radius:3px;background:#f0f0ec;color:#888;letter-spacing:.02em}
+.filter-row{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.filter-btn{font-size:12px;padding:5px 13px;border:.5px solid #ccc;border-radius:20px;cursor:pointer;background:#fff;color:#666;font-family:inherit}
+.filter-btn.on{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
+.filter-btn:hover:not(.on){background:#f5f5f3}
+.search-input{flex:1;min-width:150px;font-size:13px;padding:6px 12px;border:.5px solid #ccc;border-radius:8px;background:#fff;font-family:inherit}
+.search-input:focus{outline:none;border-color:#888}
+.school-table{width:100%;border-collapse:collapse;font-size:13px}
+.school-table th{text-align:left;font-size:11px;font-weight:500;color:#aaa;padding:8px 10px;border-bottom:.5px solid #e0e0d8;text-transform:uppercase;letter-spacing:.04em;white-space:nowrap}
+.school-table td{padding:8px 10px;border-bottom:.5px solid #e0e0d8;color:#1a1a1a;vertical-align:middle}
+.school-table tr:last-child td{border-bottom:none}
+.school-table tr:hover td{background:#fafaf8}
+.date-cell{position:relative;display:inline-block}
+.add-school-form{display:flex;gap:8px;flex-wrap:wrap;padding:12px 16px;background:#f8f8f6;border-top:.5px solid #e0e0d8;align-items:center}
+.add-school-form input,.add-school-form select{font-size:13px;padding:6px 10px;border:.5px solid #ccc;border-radius:8px;background:#fff;font-family:inherit}
+.add-school-form input{flex:1;min-width:120px}
+.add-school-btn{font-size:13px;padding:7px 16px;border:none;border-radius:8px;background:#1D9E75;color:#fff;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap}
+.add-school-btn:hover{background:#178a65}
+.del-school-btn{width:26px;height:26px;border-radius:50%;border:.5px solid #e8c4bc;background:#FAECE7;color:#993C1D;cursor:pointer;font-size:14px;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0}
+.del-school-btn:hover{background:#f5b8a8}
+.add-task-form{background:#f8f8f6;border-radius:8px;padding:10px 12px;margin-bottom:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;border:.5px solid #e8e8e4}
+.add-task-input{flex:1;min-width:180px;font-size:13px;padding:7px 10px;border:.5px solid #ddd;border-radius:8px;background:#fff;font-family:inherit}
+.add-task-input:focus{outline:none;border-color:#888}
+.add-select{font-size:12px;padding:7px 9px;border:.5px solid #ddd;border-radius:8px;background:#fff;font-family:inherit;cursor:pointer;color:#444}
+.add-btn{font-size:13px;padding:7px 16px;border:none;border-radius:8px;background:#1a1a1a;color:#fff;cursor:pointer;font-family:inherit;white-space:nowrap;font-weight:500}
+.add-btn:hover{background:#333}
+.task-item{display:flex;align-items:flex-start;gap:10px;padding:11px 8px;border-bottom:.5px solid #e0e0d8;border-radius:6px}
+.task-item:last-child{border-bottom:none}
+.task-item:hover{background:#fafaf8}
+.task-check{width:16px;height:16px;cursor:pointer;flex-shrink:0;margin-top:3px;accent-color:#1D9E75}
+.task-body{flex:1;cursor:pointer;min-width:0}
+.task-name{font-size:13px;color:#1a1a1a;margin-bottom:5px;font-weight:500;line-height:1.4}
+.task-name.done{text-decoration:line-through;color:#aaa}
+.task-meta-row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.task-hint{font-size:11px;color:#ccc;font-style:italic}
+.del-btn{flex-shrink:0;font-size:11px;padding:4px 10px;border-radius:6px;border:.5px solid #e8c4bc;background:#FAECE7;color:#993C1D;cursor:pointer;font-family:inherit;font-weight:500}
+.del-btn:hover{background:#f5b8a8}
+.dot-me{background:#E6F1FB;color:#185FA5;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+.dot-jr{background:#FBEAF0;color:#993556;width:22px;height:22px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:10px;font-weight:500;flex-shrink:0}
+.empty{text-align:center;padding:2rem;color:#aaa;font-size:13px}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:500;align-items:center;justify-content:center}
+.overlay.open{display:flex}
+.modal{background:rgba(255,255,255,.94);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border-radius:14px;width:500px;max-width:94vw;max-height:88vh;overflow-y:auto;padding:24px;position:relative;box-shadow:0 8px 40px rgba(0,0,0,.15)}
+.modal-x{position:absolute;top:14px;right:16px;font-size:18px;cursor:pointer;color:#aaa;background:none;border:none;font-family:inherit}
+.modal-x:hover{color:#1a1a1a}
+.modal-h{font-size:16px;font-weight:500;margin-bottom:4px;padding-right:28px}
+.modal-sub{font-size:11px;color:#aaa;margin-bottom:20px}
+.mf{margin-bottom:14px}
+.ml{font-size:11px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.mi{width:100%;font-size:13px;padding:8px 10px;border:.5px solid #ccc;border-radius:8px;font-family:inherit}
+.mi:focus{outline:none;border-color:#888}
+.m2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.save-btn{width:100%;padding:10px;background:#1a1a1a;color:#fff;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-family:inherit;margin-top:6px;font-weight:500}
+.save-btn:hover{background:#333}
+.alert{background:#FAECE7;border:.5px solid #F5C4B3;border-radius:8px;padding:10px 14px;font-size:13px;color:#993C1D;margin-bottom:14px;display:flex;gap:8px;align-items:center}
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:8px}
+.cal-nav{display:flex;align-items:center;gap:12px}
+.cal-nav button{background:none;border:.5px solid #ccc;border-radius:8px;padding:5px 12px;cursor:pointer;color:#666;font-family:inherit;font-size:13px}
+.cal-nav button:hover{background:#f5f5f3}
+.cal-title{font-size:15px;font-weight:500;min-width:120px;text-align:center}
+.cal-legend{display:flex;gap:10px;flex-wrap:wrap}
+.cal-legend-item{display:flex;align-items:center;gap:4px;font-size:11px;color:#666}
+.cal-dot{width:7px;height:7px;border-radius:50%}
+.cal-layout{display:grid;grid-template-columns:1fr 220px;gap:14px;align-items:start}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:#e0e0d8;border:.5px solid #e0e0d8;border-radius:10px;overflow:hidden}
+.cal-dow{background:#f8f8f6;padding:6px 4px;text-align:center;font-size:11px;font-weight:500;color:#aaa}
+.cal-cell{background:#fff;min-height:74px;padding:5px;vertical-align:top}
+.cal-cell.other-month{background:#fafaf8}
+.cal-cell.other-month .cal-day-num{color:#ccc}
+.cal-cell.is-today{background:#EBF4FF}
+.cal-cell.has-events{cursor:pointer}
+.cal-cell.has-events:hover{background:#f8f8f6}
+.cal-day-num{font-size:12px;font-weight:500;color:#888;margin-bottom:3px;display:block}
+.cal-cell.is-today .cal-day-num{color:#185FA5;font-weight:600}
+.cal-events{display:flex;flex-direction:column;gap:2px}
+.cal-event{font-size:10px;padding:2px 4px;border-radius:3px;line-height:1.3;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.ev-overdue{background:#FAECE7;color:#993C1D}.ev-pending{background:#FAEEDA;color:#854F0B}
+.ev-done{background:#EAF3DE;color:#3B6D11}.ev-waitchef,.ev-stuck{background:#F1EFE8;color:#5F5E5A}
+.ev-public{background:#E6F1FB;color:#185FA5}
+.cal-more{font-size:10px;color:#aaa;padding:1px 4px}
+.side-panel{background:#fff;border:.5px solid #e0e0d8;border-radius:10px;padding:14px}
+.side-empty{color:#aaa;font-size:13px;text-align:center;padding:2rem 0}
+.side-item{padding:8px 0;border-bottom:.5px solid #e0e0d8}
+.side-item:last-child{border-bottom:none}
+/* School Calendar */
+.sc-search-bar{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.sc-search-wrap{position:relative;flex:1;min-width:200px}
+.sc-search-input{width:100%;font-size:14px;padding:8px 14px;border:.5px solid #ccc;border-radius:8px;background:#fff;font-family:inherit}
+.sc-search-input:focus{outline:none;border-color:#888}
+.sc-suggestions{position:absolute;top:100%;left:0;right:0;background:#fff;border:.5px solid #e0e0d8;border-radius:8px;overflow:hidden;max-height:200px;overflow-y:auto;z-index:100;box-shadow:0 4px 12px rgba(0,0,0,.1);display:none}
+.sc-sug-item{padding:9px 14px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:10px;border-bottom:.5px solid #f0f0ec}
+.sc-sug-item:last-child{border-bottom:none}
+.sc-sug-item:hover{background:#f5f5f3}
+.sc-school-name{font-size:16px;font-weight:500;color:#1a1a1a}
+.sc-school-sub{font-size:12px;color:#888;margin-top:2px}
+.sc-nav{display:flex;align-items:center;gap:12px}
+.sc-nav button{background:none;border:.5px solid #ccc;border-radius:8px;padding:5px 12px;cursor:pointer;color:#666;font-family:inherit;font-size:13px}
+.sc-nav button:hover{background:#f5f5f3}
+.sc-month-title{font-size:15px;font-weight:500;min-width:140px;text-align:center}
+.sc-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-bottom:10px;user-select:none}
+.sc-dow{background:#f8f8f6;padding:6px 4px;text-align:center;font-size:11px;font-weight:500;color:#aaa;border-radius:4px}
+.sc-cell{min-height:62px;border-radius:6px;padding:4px 5px;cursor:pointer;position:relative;background:#fff;border:.5px solid #e8e8e4;transition:border-color .1s}
+.sc-cell:hover{border-color:#aaa}
+.sc-cell.other-month{background:#f8f8f6;opacity:.5}
+.sc-cell.sc-today{outline:2px solid #185FA5;outline-offset:1px}
+.sc-cell.sc-sel{outline:2px solid #185FA5;outline-offset:1px;background:#EBF4FF}
+.sc-cell-num{font-size:12px;font-weight:500;color:#888;display:block;margin-bottom:2px;pointer-events:none}
+.sc-cell.sc-today .sc-cell-num{color:#185FA5}
+.sc-cell-tag{font-size:9px;padding:2px 5px;border-radius:3px;font-weight:500;display:block;margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;pointer-events:none}
+.wk-w1{background:#D1FAE5;color:#065F46}
+.wk-w2{background:#FEF9C3;color:#713F12}
+.wk-w3{background:#FCE7F3;color:#831843}
+.wk-w4{background:#DBEAFE;color:#1E3A8A}
+.wk-w5{background:#EDE9FE;color:#4C1D95}
+.wk-w6{background:#FEE2E2;color:#7F1D1D}
+.hol-school{background:#9CA3AF;color:#fff}
+.hol-national{background:#111827 !important;color:#FFFFFF !important}
+.sc-legend-item.hol-national{color:#FFFFFF !important}
+
+.sc-legend-item.hol-national,
+.sc-cell-tag.hol-national{background:#111827 !important;color:#FFFFFF !important}
+.hol-half{background:#D1D5DB;color:#374151}
+.hol-inset{background:#E5E7EB;color:#374151}
+.pub-weekly{background:#EDE9FE;color:#4C1D95}
+.pub-monthly{background:#E0F2FE;color:#0369A1}
+.sc-year-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-top:4px}
+.sc-mini-month{border:.5px solid #e0e0d8;border-radius:8px;overflow:hidden;cursor:pointer;transition:box-shadow .15s}
+.sc-mini-month:hover{box-shadow:0 2px 12px rgba(0,0,0,.1)}
+.sc-mini-header{background:#f8f8f6;padding:6px 8px;font-size:12px;font-weight:500;color:#555;text-align:center}
+.sc-mini-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:4px 6px 6px}
+.sc-mini-cell{height:11px;border-radius:2px}
+.sc-mini-cell.mc-w1{background:#D1FAE5}
+.sc-mini-cell.mc-w2{background:#FEF9C3}
+.sc-mini-cell.mc-w3{background:#FCE7F3}
+.sc-mini-cell.mc-w4{background:#DBEAFE}
+.sc-mini-cell.mc-w5{background:#EDE9FE}
+.sc-mini-cell.mc-w6{background:#FEE2E2}
+.sc-mini-cell.mc-hol{background:#9CA3AF}
+.sc-mini-cell.mc-pub{background:#C4B5FD}
+.sc-mini-cell.mc-empty{background:#f5f5f3}
+.sc-mini-cell.mc-other{background:transparent}
+.sc-legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.sc-legend-item{display:flex;align-items:center;gap:5px;font-size:11px;color:#444;padding:3px 8px;border-radius:4px}
+.ctx-popup{position:fixed;background:#fff;border:.5px solid #e0e0d8;border-radius:10px;box-shadow:0 4px 20px rgba(0,0,0,.15);padding:8px;z-index:400;min-width:190px;display:none}
+.ctx-popup.show{display:block}
+.ctx-item{padding:8px 12px;border-radius:6px;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:8px}
+.ctx-item:hover{background:#f5f5f3}
+.ctx-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0}
+.ctx-section{font-size:10px;color:#aaa;padding:4px 12px 2px;text-transform:uppercase;letter-spacing:.06em}
+.ctx-divider{height:.5px;background:#e0e0d8;margin:4px 0}
+
+/* Task Checklist */
+.task-progress-wrap{display:flex;align-items:center;gap:8px;margin-top:6px;max-width:260px}
+.task-progress-track{height:6px;flex:1;background:#ECECE7;border-radius:999px;overflow:hidden}
+.task-progress-fill{height:100%;background:#1D9E75;border-radius:999px;transition:width .18s ease}
+.task-progress-text{font-size:10px;color:#888;white-space:nowrap}
+.check-panel{background:#F8F8F6;border:.5px solid #E0E0D8;border-radius:10px;padding:10px 12px}
+.check-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px}
+.check-summary{font-size:12px;color:#14213D;font-weight:500}
+.check-add-row{display:flex;gap:8px;margin-top:8px}
+.check-input{flex:1;font-size:13px;padding:7px 9px;border:.5px solid #ddd;border-radius:8px;background:#fff;font-family:inherit}
+.check-input:focus{outline:none;border-color:#888}
+.check-add-btn{font-size:12px;padding:7px 12px;border:none;border-radius:8px;background:#1D9E75;color:#fff;cursor:pointer;font-family:inherit;font-weight:500;white-space:nowrap}
+.check-add-btn:hover{background:#178a65}
+.check-list{display:flex;flex-direction:column;gap:5px}
+.check-row{display:flex;align-items:center;gap:8px;padding:7px 8px;background:#fff;border:.5px solid #E8E8E4;border-radius:8px}
+.check-row:hover{background:#FAFAF8}
+.check-row input{width:15px;height:15px;accent-color:#1D9E75;flex-shrink:0}
+.check-row.done .check-text{text-decoration:line-through;color:#aaa}
+.check-text{flex:1;font-size:13px;color:#1a1a1a;line-height:1.35}
+.check-del{border:none;background:#FAECE7;color:#993C1D;border-radius:6px;padding:3px 7px;cursor:pointer;font-size:11px;font-family:inherit}
+.check-empty{font-size:12px;color:#aaa;text-align:center;padding:10px 0}
+.sop-cover-img{width:100%;display:block;border-radius:14px;border:.5px solid #E0E0D8;margin-bottom:18px;background:#FFF7ED}
+
+/* Email & SOP */
+.email-type-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.email-type-btn{padding:12px 14px;border:.5px solid #ccc;border-radius:10px;cursor:pointer;background:#fff;text-align:left;font-family:inherit}
+.email-type-btn:hover{background:#f8f8f6}
+.email-type-btn.selected{border:1.5px solid #1a1a1a;background:#f8f8f6}
+.email-type-title{font-size:13px;font-weight:500;margin-bottom:2px}
+.email-type-desc{font-size:11px;color:#888}
+.fields-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:14px}
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:11px;color:#888;font-weight:500;text-transform:uppercase;letter-spacing:.04em}
+.field-input,.field-select{font-size:13px;padding:8px 10px;border:.5px solid #ccc;border-radius:8px;background:#fff;font-family:inherit;width:100%}
+.field-input:focus,.field-select:focus{outline:none;border-color:#888}
+.email-preview{background:#f8f8f6;border-radius:10px;border:.5px solid #e0e0d8;overflow:hidden;margin-bottom:10px}
+.email-preview-header{padding:12px 16px;border-bottom:.5px solid #e0e0d8;background:#fff}
+.email-subject-label{font-size:11px;color:#aaa;margin-bottom:3px;text-transform:uppercase;letter-spacing:.04em}
+.email-subject-val{font-size:13px;font-weight:500}
+.email-body-pre{padding:16px;font-size:13px;line-height:1.8;white-space:pre-wrap;font-family:inherit}
+.copy-btn{display:inline-flex;align-items:center;padding:8px 16px;border:.5px solid #ccc;border-radius:8px;background:#fff;cursor:pointer;font-size:13px;font-family:inherit;margin-right:8px}
+.copy-btn:hover{background:#f5f5f3}
+.copy-btn.copied{border-color:#1D9E75;color:#1D9E75}
+.sop-step-card{display:flex;gap:14px;padding:13px 0;border-bottom:.5px solid #e0e0d8}
+.sop-step-card:last-child{border-bottom:none}
+.sop-letter{width:34px;height:34px;border-radius:50%;background:#D85A30;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;color:#fff;flex-shrink:0;margin-top:2px}
+.sop-step-title{font-size:14px;font-weight:500;margin-bottom:3px}
+.sop-step-desc{font-size:12px;color:#666;line-height:1.6}
+.sop-note{display:inline-block;margin-top:5px;font-size:11px;padding:2px 8px;border-radius:4px;background:#FAEEDA;color:#854F0B}
+.holiday-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px}
+.holiday-item{display:flex;gap:8px;padding:8px 10px;background:#f8f8f6;border-radius:8px}
+.holiday-dot{width:8px;height:8px;border-radius:50%;background:#D85A30;flex-shrink:0;margin-top:4px}
+.holiday-label{font-size:12px;font-weight:500}
+.holiday-desc{font-size:11px;color:#666;margin-top:1px}
+.preflight-item{display:flex;gap:10px;padding:8px 0;border-bottom:.5px solid #e0e0d8;align-items:flex-start}
+.preflight-item:last-child{border-bottom:none}
+@media(max-width:700px){.metric-row,.cal-layout,.fields-row,.m2,.email-type-grid,.holiday-grid{grid-template-columns:1fr}}
+@media(max-width:700px){body{background-attachment:scroll;background-size:cover}}
+
+.sop-hero-img,
+.sop-holiday-img{
+  width:100%;
+  display:block;
+  border-radius:14px;
+  border:.5px solid #E0E0D8;
+  background:#F8F8F6;
+}
+.sop-hero-img{margin-bottom:18px}
+.sop-holiday-img{margin-bottom:18px}
+@media(max-width:700px){
+  body{background-attachment:scroll;background-size:cover}
+}
+
+
+/* Animated Sidebar + Reports */
+.side-toggle{position:fixed;left:16px;top:76px;z-index:350;width:38px;height:38px;border-radius:12px;border:.5px solid rgba(224,224,216,.9);background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;font-size:16px;color:#444;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.app-sidebar{position:fixed;left:14px;top:126px;bottom:18px;width:74px;z-index:300;background:rgba(255,255,255,.74);border:.5px solid rgba(224,224,216,.9);border-radius:22px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:0 12px 40px rgba(0,0,0,.08);padding:12px 10px;overflow:hidden;transition:width .28s ease,background .28s ease}
+.app-sidebar.open{width:258px;background:rgba(255,255,255,.84)}
+.side-brand{display:flex;align-items:center;gap:12px;margin-bottom:14px;white-space:nowrap}
+.side-logo{width:48px;height:48px;border-radius:16px;background:#1a1a1a;color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:600;letter-spacing:.04em;flex:0 0 auto}
+.side-brand-text{opacity:0;transform:translateX(-6px);transition:.2s ease;font-size:14px;font-weight:600;color:#1a1a1a;line-height:1.1}
+.side-brand-text span{font-size:11px;color:#888;font-weight:500}
+.app-sidebar.open .side-brand-text{opacity:1;transform:none}
+.side-nav{display:flex;flex-direction:column;gap:6px}
+.side-link{height:46px;border:none;background:transparent;border-radius:15px;cursor:pointer;display:flex;align-items:center;gap:12px;padding:0 13px;color:#666;font-family:inherit;text-align:left;transition:background .15s ease,color .15s ease,transform .15s ease}
+.side-link:hover{background:rgba(245,245,243,.95);transform:translateX(1px)}
+.side-link.active{background:#1a1a1a;color:#fff}
+.side-link span{font-size:17px;width:22px;text-align:center;flex:0 0 auto}
+.side-link em{font-style:normal;font-size:13px;font-weight:500;white-space:nowrap;opacity:0;transform:translateX(-6px);transition:.2s ease}
+.app-sidebar.open .side-link em{opacity:1;transform:none}
+.side-footer{position:absolute;left:10px;right:10px;bottom:12px;opacity:0;transform:translateY(8px);transition:.2s ease}
+.app-sidebar.open .side-footer{opacity:1;transform:none}
+.side-mini-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin:0 0 6px 8px}
+.side-mini-card{font-size:12px;line-height:1.45;background:#f8f8f6;border:.5px solid #e0e0d8;border-radius:14px;padding:10px 12px;color:#444}
+.side-mini-card span{color:#999;font-size:11px}
+.container{transition:padding-left .28s ease}
+body.sidebar-open .container{padding-left:248px}
+@media(min-width:901px){.tabs{display:none}}
+@media(max-width:900px){.app-sidebar{top:112px;bottom:16px;transform:translateX(-110%);width:258px}.app-sidebar.open{transform:translateX(0)}body.sidebar-open .container{padding-left:20px}.tabs{display:flex}}
+
+.reports-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.report-card{background:rgba(255,255,255,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:.5px solid #e0e0d8;border-radius:14px;padding:16px 18px;min-height:130px}
+.report-card.wide{grid-column:span 2}
+.report-hero{grid-column:span 2;display:flex;align-items:center;justify-content:space-between;background:rgba(26,26,26,.88);color:#fff}
+.report-hero .section-title{color:rgba(255,255,255,.55)}
+.health-score{font-size:42px;font-weight:600;letter-spacing:-.04em}
+.health-label{font-size:13px;color:rgba(255,255,255,.7)}
+.health-ring{width:92px;height:92px;border-radius:50%;background:conic-gradient(#1D9E75 0deg,#1D9E75 var(--deg,220deg),rgba(255,255,255,.16) var(--deg,220deg));display:flex;align-items:center;justify-content:center}
+.health-ring-inner{width:68px;height:68px;border-radius:50%;background:#1a1a1a;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:600}
+.report-value{font-size:30px;font-weight:600;margin-bottom:8px}
+.report-note{font-size:12px;color:#888;margin-top:8px}
+.soft-progress{height:7px;background:#ecece7;border-radius:999px;overflow:hidden}
+.soft-progress div{height:100%;background:#1D9E75;border-radius:999px;width:0%;transition:width .3s ease}
+.r-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:9px 0;font-size:13px}
+.r-bar{height:7px;background:#ecece7;border-radius:999px;overflow:hidden;flex:1}
+.r-bar div{height:100%;background:#1D9E75;border-radius:999px}
+.r-pill{font-size:11px;padding:2px 8px;border-radius:999px;background:#f0f0ec;color:#666;white-space:nowrap}
+.r-list-item{display:flex;align-items:center;justify-content:space-between;padding:8px 0;border-bottom:.5px solid #e0e0d8;font-size:13px;gap:12px}
+.r-list-item:last-child{border-bottom:none}
+.r-muted{font-size:12px;color:#888}
+@media(max-width:900px){.reports-grid{grid-template-columns:1fr}.report-card,.report-card.wide,.report-hero{grid-column:span 1}}
+
+
+/* Polished Sidebar + Dashboard */
+body{--side-w:276px}
+body.sidebar-open .container{padding-left:290px}
+.container{transition:padding-left .28s ease}
+.side-toggle{position:fixed;left:20px;top:76px;z-index:420;width:38px;height:38px;border-radius:12px;border:.5px solid rgba(224,224,216,.9);background:rgba(255,255,255,.82);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);cursor:pointer;font-size:16px;color:#444;box-shadow:0 8px 24px rgba(0,0,0,.06)}
+.app-sidebar{position:fixed;left:16px;top:126px;bottom:18px;width:76px;z-index:400;background:rgba(255,255,255,.78);border:.5px solid rgba(224,224,216,.9);border-radius:24px;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);box-shadow:0 16px 48px rgba(0,0,0,.08);padding:18px 12px;overflow:hidden;transition:width .28s ease,background .28s ease}
+.app-sidebar.open{width:var(--side-w);background:rgba(255,255,255,.86)}
+.side-brand{display:flex;align-items:center;gap:13px;margin-bottom:34px;white-space:nowrap}.side-mark{width:46px;height:46px;border-radius:50%;background:conic-gradient(#F4AE00 0 70deg,transparent 70deg 98deg,#F4AE00 98deg 180deg,transparent 180deg 210deg,#F4AE00 210deg 320deg,transparent 320deg);position:relative;flex:0 0 auto}.side-mark:after{content:"";position:absolute;inset:8px;background:rgba(255,255,255,.9);border-radius:50%}
+.side-brand-text{opacity:0;transform:translateX(-8px);transition:.2s ease;color:#14213D;line-height:1.02}.side-brand-text strong{font-size:23px}.side-brand-text span{font-size:18px;color:#14213D;font-weight:400}.app-sidebar.open .side-brand-text{opacity:1;transform:none}
+.side-nav{display:flex;flex-direction:column;gap:10px}.side-link{height:52px;border:none;background:transparent;border-radius:14px;cursor:pointer;display:flex;align-items:center;gap:15px;padding:0 14px;color:#66758A;font-family:inherit;text-align:left;transition:background .15s ease,color .15s ease,transform .15s ease,box-shadow .15s ease}.side-link:hover{background:#F7EFDF;color:#14213D;transform:translateX(1px)}.side-link.active{background:#F4E8CE;color:#14213D;font-weight:600;box-shadow:inset 0 0 0 .5px rgba(216,190,140,.35)}.side-link span{font-size:20px;width:24px;text-align:center;flex:0 0 auto}.side-link em{font-style:normal;font-size:14px;font-weight:500;white-space:nowrap;opacity:0;transform:translateX(-8px);transition:.2s ease}.app-sidebar.open .side-link em{opacity:1;transform:none}
+.side-footer{position:absolute;left:14px;right:14px;bottom:16px;opacity:0;transform:translateY(8px);transition:.2s ease}.app-sidebar.open .side-footer{opacity:1;transform:none}.side-mini-label{font-size:10px;color:#aaa;text-transform:uppercase;letter-spacing:.06em;margin:0 0 7px 8px}.side-mini-card{font-size:12px;line-height:1.45;background:rgba(248,248,246,.9);border:.5px solid #e0e0d8;border-radius:16px;padding:11px 13px;color:#444}.side-mini-card span{color:#999;font-size:11px}
+@media(min-width:901px){.tabs{display:none}}@media(max-width:900px){.app-sidebar{top:112px;bottom:16px;transform:translateX(-115%);width:276px}.app-sidebar.open{transform:translateX(0)}body.sidebar-open .container{padding-left:20px}.tabs{display:flex}.side-toggle{top:72px}}
+.dash-hero{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:12px}.dash-eyebrow{font-size:11px;color:#aaa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}.dash-title{font-size:26px;font-weight:650;color:#14213D;letter-spacing:-.03em}.dash-sub{font-size:13px;color:#777;margin-top:5px}.dash-date{font-size:12px;color:#888;background:#f8f8f6;border:.5px solid #e0e0d8;border-radius:999px;padding:7px 12px;white-space:nowrap}
+.dash-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:12px}.dash-two{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}.dash-card{background:rgba(255,255,255,.88);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);border:.5px solid #e0e0d8;border-radius:14px;padding:16px 18px;min-height:136px}.dash-card.dark{background:rgba(20,33,61,.92);color:#fff}.dash-card.dark .section-title{color:rgba(255,255,255,.58)}.dash-big{font-size:34px;font-weight:650;letter-spacing:-.04em;margin-top:8px;color:#14213D}.dash-card.dark .dash-big{color:#fff}.dash-big.amber{color:#BA7517}.dash-big.red{color:#D85A30}.dash-muted{font-size:12px;color:#888;margin-top:4px}.dash-card.dark .dash-muted{color:rgba(255,255,255,.7)}.quick-note{font-size:13px;color:#666;line-height:1.65;background:#f8f8f6;border:.5px solid #e0e0d8;border-radius:12px;padding:12px 14px}
+@media(max-width:900px){.dash-grid,.dash-two{grid-template-columns:1fr}.dash-hero{align-items:flex-start;flex-direction:column}}
+
+
+/* Safe scrolling / popup fix */
+html,body{min-height:100%;overflow-y:auto}
+body{padding-bottom:110px}
+.page{padding-bottom:80px}
+.ctx-popup{
+  max-height:calc(100vh - 130px);
+  overflow-y:auto;
+  overscroll-behavior:contain;
+}
+.ctx-popup.show{
+  display:block;
+}
+
+
+/* School Calendar dropdown / team filter */
+.sc-team-filter{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.sc-school-select{
+  min-width:220px;
+  max-width:280px;
+  font-size:13px;
+  padding:7px 12px;
+  border:.5px solid #ccc;
+  border-radius:8px;
+  background:rgba(255,255,255,.92);
+  font-family:inherit;
+  color:#444;
+}
+.sc-school-select:focus{outline:none;border-color:#888}
+@media(max-width:700px){
+  .sc-school-select{width:100%;max-width:none}
+  .sc-team-filter{width:100%}
+}
+
+</style>
+</head>
+<body class="sidebar-open">
+
+<div class="topbar">
+  <div>
+    <div class="topbar-title">Menu Control Board</div>
+    <div class="topbar-date" id="today-label"></div>
+  </div>
+  <div class="topbar-right">
+    <span class="save-status" id="save-status"></span>
+    <button class="tb-btn" onclick="exportData()">⬇ Export</button>
+    <label class="tb-btn" style="cursor:pointer">⬆ Import<input type="file" accept=".json" onchange="importData(event)" style="display:none"></label>
+    <span class="tag-pl">PL Team</span>
+    <span class="tag-wp">WP Team</span>
+  </div>
+</div>
+
+
+<button class="side-toggle" onclick="toggleSidebar()" title="Toggle menu">☰</button>
+<aside class="app-sidebar open" id="app-sidebar">
+  <div class="side-brand"><div class="side-mark"></div><div class="side-brand-text"><div><strong>ECC</strong></div><span>Menu Control Board</span></div></div>
+  <nav class="side-nav">
+    <button class="side-link active" onclick="sideSwitch('dashboard',this)"><span>⌂</span><em>Dashboard</em></button>
+    <button class="side-link" onclick="sideSwitch('schools',this)"><span>▣</span><em>School Tracker</em></button>
+    <button class="side-link" onclick="sideSwitch('daily',this)"><span>☑</span><em>Today Task</em></button>
+    <button class="side-link" onclick="sideSwitch('calendar',this)"><span>☷</span><em>Calendar</em></button>
+    <button class="side-link" onclick="sideSwitch('schoolcal',this)"><span>◫</span><em>School Calendar</em></button>
+    <button class="side-link" onclick="sideSwitch('reports',this)"><span>↗</span><em>Reports</em></button>
+    <button class="side-link" onclick="sideSwitch('email',this)"><span>✉</span><em>Email Templates</em></button>
+    <button class="side-link" onclick="sideSwitch('sop',this)"><span>▤</span><em>SOP & Docs</em></button>
+  </nav>
+  <div class="side-footer"><div class="side-mini-label">Workspace</div><div class="side-mini-card">Catering Team<br><span>Internal Operations</span></div></div>
+</aside>
+
+
+
+<div class="container">
+<div class="metric-row">
+  <div class="metric"><div class="metric-label">Schools</div><div class="metric-val" id="m-total">34</div><div class="metric-sub">all active</div></div>
+  <div class="metric"><div class="metric-label">Pending</div><div class="metric-val" style="color:#BA7517" id="m-pending">—</div><div class="metric-sub">Pending</div></div>
+  <div class="metric"><div class="metric-label">Done</div><div class="metric-val" style="color:#1D9E75" id="m-done">—</div><div class="metric-sub">Done</div></div>
+  <div class="metric"><div class="metric-label">Overdue</div><div class="metric-val" style="color:#D85A30" id="m-overdue">—</div><div class="metric-sub">Overdue</div></div>
+</div>
+
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('dashboard',this)">Dashboard</button>
+  <button class="tab" onclick="switchTab('schools',this)">School Tracker</button>
+  <button class="tab" onclick="switchTab('daily',this)">Today's Tasks</button>
+  <button class="tab" onclick="switchTab('calendar',this)">Calendar</button>
+  <button class="tab" onclick="switchTab('schoolcal',this)">School Calendar</button>
+  <button class="tab" onclick="switchTab('email',this)">Email Templates</button>
+  <button class="tab" onclick="switchTab('reports',this)">Reports</button>
+  <button class="tab" onclick="switchTab('sop',this)">SOP Guide</button>
+</div>
+
+<!-- SCHOOL TRACKER -->
+
+<!-- DASHBOARD -->
+<div id="page-dashboard" class="page active">
+  <div class="dash-hero card">
+    <div><div class="dash-eyebrow">Menu Control Board</div><div class="dash-title">Dashboard Overview</div><div class="dash-sub">สรุปภาพรวมงาน School และ deadline สำคัญ</div></div>
+    <div class="dash-date" id="dash-date">—</div>
+  </div>
+  <div class="dash-grid">
+    <div class="dash-card dark"><div class="section-title">Workflow Health</div><div class="dash-big" id="d-health">—</div><div class="dash-muted" id="d-health-label">Calculating...</div></div>
+    <div class="dash-card"><div class="section-title">Completed</div><div class="dash-big" id="d-done">—</div><div class="dash-muted">schools done</div></div>
+    <div class="dash-card"><div class="section-title">Pending</div><div class="dash-big amber" id="d-pending">—</div><div class="dash-muted">waiting to finish</div></div>
+    <div class="dash-card"><div class="section-title">Overdue</div><div class="dash-big red" id="d-overdue">—</div><div class="dash-muted">needs attention</div></div>
+  </div>
+  <div class="dash-two">
+    <div class="dash-card"><div class="section-title">Status Breakdown</div><div id="d-status-bars"></div></div>
+    <div class="dash-card"><div class="section-title">Team Workload</div><div id="d-workload"></div></div>
+  </div>
+  <div class="dash-two">
+    <div class="dash-card"><div class="section-title">Upcoming Task / Deadline</div><div id="d-upcoming"></div></div>
+    <div class="dash-card"><div class="section-title">Quick Notes</div><div class="quick-note">Dashboard เอาไว้ดูภาพรวมเร็วๆ ส่วน Reports เอาไว้ดู analytics ลึกขึ้น</div></div>
+  </div>
+</div>
+
+<div id="page-schools" class="page">
+  <div class="filter-row">
+    <input class="search-input" type="text" placeholder="Search name or code..." oninput="filterSchools()" id="search-school">
+    <button class="filter-btn on" onclick="setFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setFilter('pending',this)">Pending</button>
+    <button class="filter-btn" onclick="setFilter('done',this)">Done</button>
+    <button class="filter-btn" onclick="setFilter('overdue',this)">Overdue</button>
+    <button class="filter-btn" onclick="setFilter('waitchef',this)">Wait Chef</button>
+    <button class="filter-btn" onclick="setFilter('stuck',this)">Stuck</button>
+    <button class="filter-btn" onclick="setTeam('PL',this)" id="btn-pl">PL Team</button>
+    <button class="filter-btn" onclick="setTeam('WP',this)" id="btn-wp">WP Team</button>
+  </div>
+  <div class="card" style="padding:0;overflow-x:auto">
+    <table class="school-table">
+      <thead><tr>
+        <th style="width:36px;padding-left:10px"></th>
+        <th style="width:38px">No.</th>
+        <th style="width:54px">Code</th>
+        <th>School</th>
+        <th style="width:88px">Team</th>
+        <th style="width:78px">Week</th>
+        <th style="width:108px">Deadline</th>
+        <th style="width:148px">Status</th>
+        <th style="width:76px">By</th>
+      </tr></thead>
+      <tbody id="school-tbody"></tbody>
+    </table>
+    <div class="add-school-form">
+      <input id="ns-code" type="text" placeholder="CODE" style="width:80px;flex:none">
+      <input id="ns-name" type="text" placeholder="ชื่อSchool">
+      <select id="ns-team" style="width:70px;flex:none"><option value="PL">PL</option><option value="WP">WP</option></select>
+      <select id="ns-week" style="width:70px;flex:none"><option>W1</option><option>W2</option><option>W3</option><option>W4</option><option>W5</option><option>W6</option></select>
+      <input id="ns-deadline" type="date" style="width:130px;flex:none">
+      <button class="add-school-btn" onclick="addSchool()">+ Add School</button>
+    </div>
+  </div>
+</div>
+
+<!-- TODAY'S TASKS -->
+<div id="page-daily" class="page">
+  <div id="alert-box" class="alert" style="display:none"><span>⚠</span><span id="alert-text"></span></div>
+
+  <!-- Filter bar -->
+  <div class="filter-row" style="margin-bottom:14px">
+    <span style="font-size:12px;color:#888;font-weight:500">Show:</span>
+    <button class="filter-btn on" onclick="setTaskFilter('all',this)">All</button>
+    <button class="filter-btn" onclick="setTaskFilter('me',this)"><span class="dot-me" style="width:18px;height:18px;font-size:9px;margin-right:4px">ME</span>ME</button>
+    <button class="filter-btn" onclick="setTaskFilter('jr',this)"><span class="dot-jr" style="width:18px;height:18px;font-size:9px;margin-right:4px">JR</span>JR</button>
+    <button class="filter-btn" onclick="setTaskFilter('urgent',this)">🔴 Urgent</button>
+    <button class="filter-btn" onclick="setTaskFilter('pending',this)">Pending</button>
+    <button class="filter-btn" onclick="setTaskFilter('done',this)">Done</button>
+  </div>
+
+  <div class="card">
+    <div class="section-title">Today Tasks</div>
+    <div class="add-task-form">
+      <input class="add-task-input" id="in-today" type="text" placeholder="Task Name เช่น HAR — Fill Template (Step C)">
+      <select class="add-select" id="as-today"><option value="me">ME</option><option value="jr">JR</option></select>
+      <select class="add-select" id="pr-today"><option value="urgent">Urgent</option><option value="medium">Medium</option><option value="low">Low</option></select>
+      <button class="add-btn" id="btn-add-today" onclick="addTask('today')">+ Add Task</button>
+    </div>
+    <div id="tasks-today"></div>
+  </div>
+  <div class="card">
+    <div class="section-title">Upcoming Tasks</div>
+    <div class="add-task-form">
+      <input class="add-task-input" id="in-week" type="text" placeholder="Task Name เช่น BCBV — Monthly Menu W1">
+      <select class="add-select" id="as-week"><option value="me">ME</option><option value="jr">JR</option></select>
+      <select class="add-select" id="pr-week"><option value="medium">Medium</option><option value="urgent">Urgent</option><option value="low">Low</option></select>
+      <button class="add-btn" id="btn-add-week" onclick="addTask('week')">+ Add Task</button>
+    </div>
+    <div id="tasks-week"></div>
+  </div>
+</div>
+
+<!-- OVERVIEW CALENDAR -->
+<div id="page-calendar" class="page">
+  <div class="card">
+    <div class="cal-header">
+      <div class="cal-nav">
+        <button onclick="changeMonth(-1)">&#8592;</button>
+        <div class="cal-title" id="cal-title"></div>
+        <button onclick="changeMonth(1)">&#8594;</button>
+      </div>
+      <div class="cal-legend">
+        <div class="cal-legend-item"><div class="cal-dot" style="background:#D85A30"></div>Overdue</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:#EF9F27"></div>Pending</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:#639922"></div>Done</div>
+        <div class="cal-legend-item"><div class="cal-dot" style="background:#185FA5"></div>Public</div>
+      </div>
+    </div>
+    <div class="cal-layout">
+      <div><div class="cal-grid" id="cal-grid"></div></div>
+      <div class="side-panel">
+        <div class="section-title" id="side-date-label">Select a date to view details</div>
+        <div id="side-content"><div class="side-empty">Click a date with deadline</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SCHOOL CALENDAR -->
+<div id="page-schoolcal" class="page">
+  <div class="card">
+    <div class="sc-search-bar">
+      <div class="sc-search-wrap">
+        <input class="sc-search-input" id="sc-search" type="text" placeholder="Type CODE e.g. HAR, ANS..." oninput="scSearch()" autocomplete="off" onfocus="scSearch()">
+        <div class="sc-suggestions" id="sc-suggestions"></div>
+      </div>
+      <div class="sc-team-filter">
+        <button class="filter-btn on" onclick="scSetTeamFilter('all',this)" id="sc-team-all">All</button>
+        <button class="filter-btn" onclick="scSetTeamFilter('PL',this)" id="sc-team-pl">PL Team</button>
+        <button class="filter-btn" onclick="scSetTeamFilter('WP',this)" id="sc-team-wp">WP Team</button>
+      </div>
+      <select class="sc-school-select" id="sc-school-select" onchange="scSelectFromDropdown(this.value)">
+        <option value="">Select school...</option>
+      </select>
+      <div id="sc-school-info">
+        <div class="sc-school-name" id="sc-name-label">— Select School —</div>
+        <div class="sc-school-sub" id="sc-sub-label">Type CODE to search</div>
+      </div>
+      <div class="sc-nav" id="sc-month-nav" style="display:none">
+        <button onclick="scChangeMonth(-1)">&#8592;</button>
+        <div class="sc-month-title" id="sc-month-title"></div>
+        <button onclick="scChangeMonth(1)">&#8594;</button>
+        <button onclick="scShowYear()" style="font-size:12px;padding:5px 10px;border:.5px solid #ccc;border-radius:8px;background:#f8f8f6;cursor:pointer;font-family:inherit;color:#666;margin-left:4px">↩ ปีAll</button>
+      </div>
+      <div id="sc-year-nav" style="display:flex;align-items:center;gap:10px">
+        <button onclick="scChangeYear(-1)" style="background:none;border:.5px solid #ccc;border-radius:8px;padding:5px 12px;cursor:pointer;color:#666;font-family:inherit;font-size:13px">&#8592;</button>
+        <div id="sc-year-title" style="font-size:15px;font-weight:500;min-width:60px;text-align:center"></div>
+        <button onclick="scChangeYear(1)" style="background:none;border:.5px solid #ccc;border-radius:8px;padding:5px 12px;cursor:pointer;color:#666;font-family:inherit;font-size:13px">&#8594;</button>
+      </div>
+    </div>
+
+    <div class="sc-legend">
+      <div class="sc-legend-item wk-w1">W1</div>
+      <div class="sc-legend-item wk-w2">W2</div>
+      <div class="sc-legend-item wk-w3">W3</div>
+      <div class="sc-legend-item wk-w4">W4</div>
+      <div class="sc-legend-item wk-w5">W5</div>
+      <div class="sc-legend-item wk-w6">W6</div>
+      <div class="sc-legend-item hol-school" style="border-radius:4px">School Holiday</div>
+      <div class="sc-legend-item hol-national" style="border-radius:4px">National Holiday</div>
+      <div class="sc-legend-item hol-half" style="border-radius:4px">Half Day</div>
+      <div class="sc-legend-item hol-inset" style="border-radius:4px">INSET Day</div>
+      <div class="sc-legend-item" style="background:#EDE9FE;color:#4C1D95;border-radius:4px">Weekly Public</div>
+      <div class="sc-legend-item" style="background:#E0F2FE;color:#0369A1;border-radius:4px">Monthly Public</div>
+    </div>
+
+    <!-- Year overview (12 mini months) -->
+    <div id="sc-year-view">
+      <div id="sc-no-school" style="text-align:center;padding:3rem;color:#aaa;font-size:13px">Select a school to view calendar</div>
+      <div id="sc-year-grid" style="display:none;display:none"></div>
+    </div>
+
+    <!-- Month detail view -->
+    <div id="sc-month-view" style="display:none">
+      <div class="sc-grid" id="sc-cal-grid"></div>
+    </div>
+  </div>
+</div>
+
+<!-- CONTEXT POPUP -->
+<div class="ctx-popup" id="ctx-popup">
+  <div class="ctx-section">Rotation Week</div>
+  <div class="ctx-item" onclick="assignWeek('W1')"><div class="ctx-dot wk-w1" style="background:#D1FAE5"></div>W1 Menu</div>
+  <div class="ctx-item" onclick="assignWeek('W2')"><div class="ctx-dot" style="background:#FEF9C3"></div>W2 Menu</div>
+  <div class="ctx-item" onclick="assignWeek('W3')"><div class="ctx-dot" style="background:#FCE7F3"></div>W3 Menu</div>
+  <div class="ctx-item" onclick="assignWeek('W4')"><div class="ctx-dot" style="background:#DBEAFE"></div>W4 Menu</div>
+  <div class="ctx-item" onclick="assignWeek('W5')"><div class="ctx-dot" style="background:#EDE9FE"></div>W5 Menu</div>
+  <div class="ctx-item" onclick="assignWeek('W6')"><div class="ctx-dot" style="background:#FEE2E2"></div>W6 Menu</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-section">Holiday / Special</div>
+  <div class="ctx-item" onclick="assignHoliday('school')"><div class="ctx-dot" style="background:#9CA3AF"></div>School Holiday</div>
+  <div class="ctx-item" onclick="assignHoliday('national')"><div class="ctx-dot" style="background:#6B7280"></div>National Holiday</div>
+  <div class="ctx-item" onclick="assignHoliday('half')"><div class="ctx-dot" style="background:#D1D5DB"></div>Half Day</div>
+  <div class="ctx-item" onclick="assignHoliday('inset')"><div class="ctx-dot" style="background:#E5E7EB"></div>INSET Day</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-section">Public Status</div>
+  <div class="ctx-item" onclick="assignPublic('weekly')"><div class="ctx-dot" style="background:#7C3AED"></div>Weekly Public</div>
+  <div class="ctx-item" onclick="assignPublic('monthly')"><div class="ctx-dot" style="background:#0EA5E9"></div>Monthly Public</div>
+  <div class="ctx-divider"></div>
+  <div class="ctx-item" onclick="clearDays()" style="color:#993C1D">✕ Clear Selection</div>
+</div>
+
+<!-- EMAIL -->
+<div id="page-email" class="page">
+  <div class="card">
+    <div class="section-title">Select Email Type</div>
+    <div class="email-type-grid">
+      <button class="email-type-btn selected" onclick="selectType('send',this)"><div class="email-type-title">📨 Send Menu to School</div><div class="email-type-desc">Send monthly menu PDF ให้ school coordinator</div></button>
+      <button class="email-type-btn" onclick="selectType('chef',this)"><div class="email-type-title">👨‍🍳 Request / Remind Chef</div><div class="email-type-desc">Request menu or follow up when not received</div></button>
+      <button class="email-type-btn" onclick="selectType('revision',this)"><div class="email-type-title">✏️ แจ้งแก้ไขเมนู</div><div class="email-type-desc">Send revised menu after feedback</div></button>
+      <button class="email-type-btn" onclick="selectType('delay',this)"><div class="email-type-title">🔔 Delay Notice / Extension Request</div><div class="email-type-desc">Notify school if menu submission is delayed</div></button>
+    </div>
+    <div class="section-title">Input Details</div>
+    <div class="fields-row" id="fields-area"></div>
+    <div class="section-title">Email Preview</div>
+    <div class="email-preview">
+      <div class="email-preview-header"><div class="email-subject-label">Subject</div><div class="email-subject-val" id="preview-subject"></div></div>
+      <div class="email-body-pre" id="preview-body"></div>
+    </div>
+    <button class="copy-btn" id="copy-subject-btn" onclick="copyText('subject')">Copy subject</button>
+    <button class="copy-btn" id="copy-body-btn" onclick="copyText('body')">Copy body</button>
+  </div>
+</div>
+
+<!-- SOP -->
+
+<!-- REPORTS -->
+<div id="page-reports" class="page">
+  <div class="reports-grid">
+    <div class="report-card report-hero">
+      <div>
+        <div class="section-title">Workflow Health</div>
+        <div class="health-score" id="r-health">—</div>
+        <div class="health-label" id="r-health-label">Calculating...</div>
+      </div>
+      <div class="health-ring">
+        <div class="health-ring-inner" id="r-health-mini">—</div>
+      </div>
+    </div>
+
+    <div class="report-card">
+      <div class="section-title">Completion Rate</div>
+      <div class="report-value" id="r-complete">—</div>
+      <div class="soft-progress"><div id="r-complete-bar"></div></div>
+      <div class="report-note" id="r-complete-note">—</div>
+    </div>
+
+    <div class="report-card">
+      <div class="section-title">Team Workload</div>
+      <div id="r-workload"></div>
+    </div>
+
+    <div class="report-card">
+      <div class="section-title">Status Breakdown</div>
+      <div id="r-status-bars"></div>
+    </div>
+
+    <div class="report-card wide">
+      <div class="section-title">Upcoming Deadlines</div>
+      <div id="r-upcoming"></div>
+    </div>
+
+    <div class="report-card wide">
+      <div class="section-title">Rotation Distribution</div>
+      <div id="r-rotation"></div>
+    </div>
+  </div>
+</div>
+
+<div id="page-sop" class="page">
+  <div class="card">
+    <img class="sop-cover-img" src="sop-cover.png" alt="SOP Rotation Menu Preparation and Submission">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:8px">
+      <div><div style="font-size:16px;font-weight:500">SOP — Rotation Menu Preparation & Submission</div><div style="font-size:12px;color:#888;margin-top:2px">Delivering better results with clear processes and strong collaboration</div></div>
+      <div style="font-size:11px;color:#aaa;text-align:right">Created by PONTHEERA.W<br>Apr 19, 2026</div>
+    </div>
+    <div class="sop-step-card"><div class="sop-letter">A</div><div><div class="sop-step-title">Receive Menu</div><div class="sop-step-desc">รับเมนูจากเชฟ ถ้ายังไม่ได้รับให้ส่ง email ขอก่อน</div></div></div>
+    <div class="sop-step-card"><div class="sop-letter">B</div><div><div class="sop-step-title">Check Rotation Menu</div><div class="sop-step-desc">ตรวจสอบ rotation menu ว่า week ที่จะส่งคือ week อะไร มีการเปลี่ยนแปลงจากเชฟหรือไม่</div><span class="sop-note">Drive: Y</span></div></div>
+    <div class="sop-step-card"><div class="sop-letter">C</div><div><div class="sop-step-title">Fill Template</div><div class="sop-step-desc">Input Detailsเมนูลง template ของแต่ละ รร. ตรวจสอบ format, สี, โลโก้ให้ถูกต้องตาม brand</div></div></div>
+    <div class="sop-step-card"><div class="sop-letter">D</div><div><div class="sop-step-title">QC</div><div class="sop-step-desc">ตรวจสอบก่อน export ทุกครั้ง: การสะกดชื่อเมนู, ไอคอน Allergen, วันที่</div><span class="sop-note">Spelling · Allergen Icons · Dates</span></div></div>
+    <div class="sop-step-card"><div class="sop-letter">E</div><div><div class="sop-step-title">Export File — Correct Naming</div><div class="sop-step-desc">Export เป็น PDF หรือ PNG ตั้งชื่อไฟล์: <strong>CODE_Month_WeekX</strong> (e.g. HAR_May_W2)</div><span class="sop-note">PDF or PNG</span></div></div>
+    <div class="sop-step-card"><div class="sop-letter">F</div><div><div class="sop-step-title">Send Email to School</div><div class="sop-step-desc">ส่ง email หา school coordinator พร้อมแนบไฟล์ ใช้ Email Templates tab ได้เลย</div></div></div>
+    <div class="sop-step-card"><div class="sop-letter" style="background:#1D9E75">G</div><div><div class="sop-step-title">Update Status</div><div class="sop-step-desc">อัปเดต status ใน School Tracker เป็น Done และจดวันที่ส่ง</div></div></div>
+  </div>
+  <div class="card"><div class="section-title">Checklist ก่อน Export (Step D)</div><div id="preflight-list"></div></div>
+  <div class="card">
+    <img class="sop-holiday-img" src="school-holiday-types.png" alt="School Holiday Types">
+    <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><div style="font-size:15px;font-weight:500">School Holiday Types</div><span style="font-size:11px;padding:2px 8px;border-radius:4px;background:#f0f0ec;color:#666">Remark สำหรับใส่ในเมนู</span></div>
+    <div class="holiday-grid">
+      <div class="holiday-item"><div class="holiday-dot"></div><div><div class="holiday-label">National Holiday</div><div class="holiday-desc">Annual public holiday</div></div></div>
+      <div class="holiday-item"><div class="holiday-dot"></div><div><div class="holiday-label">No School / School Holiday</div><div class="holiday-desc">School holiday / term break</div></div></div>
+      <div class="holiday-item"><div class="holiday-dot"></div><div><div class="holiday-label">No Classes</div><div class="holiday-desc">School open, no classes</div></div></div>
+      <div class="holiday-item"><div class="holiday-dot"></div><div><div class="holiday-label">Teacher In-Service: No School</div><div class="holiday-desc">Teacher training, no classes</div></div></div>
+      <div class="holiday-item"><div class="holiday-dot"></div><div><div class="holiday-label">INSET Day</div><div class="holiday-desc">School meeting day, no classes</div></div></div>
+      <div class="holiday-item"><div class="holiday-dot" style="background:#1D9E75"></div><div><div class="holiday-label">Half Day</div><div class="holiday-desc">Half-day classes</div></div></div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- TASK MODAL -->
+<div class="overlay" id="overlay" onclick="bgClose(event)">
+  <div class="modal">
+    <button class="modal-x" onclick="closeModal()">✕</button>
+    <div class="modal-h" id="m-heading">Task Details</div>
+    <div class="modal-sub" id="m-created"></div>
+    <div class="mf"><div class="ml">Task Name</div><input class="mi" id="m-name" type="text"></div>
+    <div class="m2">
+      <div class="mf"><div class="ml">Deadline</div><input class="mi" id="m-deadline" type="date"></div>
+      <div class="mf"><div class="ml">Assignee</div><select class="mi" id="m-assign"><option value="me">ME</option><option value="jr">JR</option></select></div>
+    </div>
+    <div class="m2">
+      <div class="mf"><div class="ml">Priority</div><select class="mi" id="m-priority"><option value="urgent">Urgent</option><option value="medium">Medium</option><option value="low">Low</option></select></div>
+      <div class="mf"><div class="ml">Status</div>
+        <select class="mi" id="m-status">
+          <option value="pending">Pending</option><option value="overdue">Overdue</option>
+          <option value="done">Done</option><option value="waitchef">Wait Chef</option>
+          <option value="public">Public</option><option value="stuck">Stuck (need help)</option>
+        </select>
+      </div>
+    </div>
+    <div class="mf"><div class="ml">Note</div><textarea class="mi" id="m-note" rows="3" style="resize:vertical"></textarea></div>
+    <div class="mf">
+      <div class="ml">Checklist</div>
+      <div class="check-panel">
+        <div class="check-head">
+          <div class="check-summary" id="check-summary">0 / 0 Complete</div>
+          <div class="task-progress-wrap" style="margin-top:0;min-width:150px">
+            <div class="task-progress-track"><div class="task-progress-fill" id="m-check-progress" style="width:0%"></div></div>
+          </div>
+        </div>
+        <div class="check-list" id="task-checklist"></div>
+        <div class="check-add-row">
+          <input class="check-input" id="new-check-item" type="text" placeholder="เพิ่ม checklist เช่น QC spelling">
+          <button class="check-add-btn" type="button" onclick="addChecklistItem()">+ Add</button>
+        </div>
+      </div>
+    </div>
+    <button class="save-btn" onclick="saveModal()">Save</button>
+  </div>
+</div>
+
+<script>
+// ── Constants ─────────────────────────────────────────────────────
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+const MONTHS_SHORT=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+const SM={overdue:{l:'Overdue',c:'b-overdue',e:'ev-overdue',sc:'s-overdue'},pending:{l:'Pending',c:'b-pending',e:'ev-pending',sc:'s-pending'},done:{l:'Done',c:'b-done',e:'ev-done',sc:'s-done'},waitchef:{l:'Wait Chef',c:'b-waitchef',e:'ev-waitchef',sc:'s-waitchef'},public:{l:'Public',c:'b-public',e:'ev-public',sc:'s-public'},stuck:{l:'Stuck',c:'b-stuck',e:'ev-stuck',sc:'s-stuck'}};
+const PM={urgent:{l:'Urgent',c:'b-urgent'},medium:{l:'Medium',c:'b-medium'},low:{l:'Low',c:'b-low'}};
+const WK_CSS={W1:'wk-w1',W2:'wk-w2',W3:'wk-w3',W4:'wk-w4',W5:'wk-w5',W6:'wk-w6'};
+const HOL_CSS={school:'hol-school',national:'hol-national',half:'hol-half',inset:'hol-inset'};
+const HOL_LABEL={school:'School Holiday',national:'National Holiday',half:'Half Day',inset:'INSET Day'};
+const LS_KEY='menuboard_v2';
+
+// ── Supabase ──────────────────────────────────────────────────────
+const SB_URL='https://zvezbqiugjlilvvpntss.supabase.co';
+const SB_KEY='sb_publishable_tUAenrkpP52ja_6CbgabRw_mv1v5CBj';
+const HDR={
+  'Content-Type':'application/json',
+  'apikey':SB_KEY,
+  'Authorization':'Bearer '+SB_KEY,
+  'X-Client-Info':'menu-control-board/1.0'
+};
+
+async function sbGet(table,qs=''){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/'+table+(qs?'?'+qs:''),{headers:HDR});
+    if(!r.ok){console.warn('sbGet error',r.status,await r.text());return [];}
+    return await r.json();
+  }catch(e){console.warn('sbGet fetch fail',e);return [];}
+}
+async function sbUpsert(table,rows){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...HDR,'Prefer':'resolution=merge-duplicates'},body:JSON.stringify(rows)});
+    if(!r.ok){console.warn('sbUpsert error',r.status,await r.text());}
+  }catch(e){console.warn('sbUpsert fetch fail',e);}
+}
+async function sbDel(table,qs){
+  try{
+    const r=await fetch(SB_URL+'/rest/v1/'+table+'?'+qs,{method:'DELETE',headers:HDR});
+    if(!r.ok){console.warn('sbDel error',r.status,await r.text());}
+  }catch(e){console.warn('sbDel fetch fail',e);}
+}
+
+function showSaveStatus(msg,color){
+  const el=document.getElementById('save-status');
+  el.textContent=msg;if(color)el.style.color=color;
+  setTimeout(()=>{el.textContent='';el.style.color='#888';},3000);
+}
+
+async function saveSchoolDb(s){
+  await sbUpsert('schools',[{no:s.no,code:s.code,name:s.name,team:s.team,week:s.week,deadline:s.deadline||'',status:s.status,assign:s.assign}]);
+}
+async function deleteSchoolDb(no){await sbDel('schools','no=eq.'+no);}
+
+async function saveTaskDb(t,section){
+  await sbUpsert('tasks',[{id:t.id,section,name:t.name,assign:t.assign,priority:t.priority,status:t.status,deadline:t.deadline||'',note:t.note||'',done:t.done}]);
+}
+async function deleteTaskDb(id){await sbDel('tasks','id=eq.'+id);}
+
+async function saveCalDayDb(code,dk,dd){
+  await sbUpsert('school_calendar',[{school_code:code,date_key:dk,type:dd.type||null,week:dd.week||null,hol:dd.hol||null,pub:dd.pub||null}]);
+}
+async function deleteCalDayDb(code,dk){await sbDel('school_calendar','school_code=eq.'+code+'&date_key=eq.'+dk);}
+
+function saveData(){
+  // local backup
+  try{localStorage.setItem(LS_KEY,JSON.stringify({schools,tasks,scData,nextNo}));}catch(e){}
+  const t=new Date();
+  document.getElementById('save-status').textContent='Saveแล้ว '+String(t.getHours()).padStart(2,'0')+':'+String(t.getMinutes()).padStart(2,'0');
+}
+
+function loadSavedData(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(d.schools&&d.schools.length)schools=d.schools;
+    if(d.tasks)tasks=d.tasks;if(d.scData)scData=d.scData;if(d.nextNo)nextNo=d.nextNo;
+    return true;
+  }catch(e){return false;}
+}
+
+async function loadFromSupabase(){
+  showSaveStatus('กำลังโหลด...','#aaa');
+  try{
+    // Schools
+    const dbS=await sbGet('schools','order=no.asc');
+    if(dbS&&dbS.length&&!dbS.error){
+      schools=dbS.map(s=>({no:s.no,code:s.code,name:s.name,team:s.team,week:s.week,deadline:s.deadline||'',status:s.status,assign:s.assign}));
+      nextNo=Math.max(...schools.map(s=>s.no))+1;
+    } else {
+      // First run — push default schools up
+      for(const s of schools) await saveSchoolDb(s);
+    }
+    // Tasks
+    const dbT=await sbGet('tasks','order=created_at.asc');
+    if(dbT&&dbT.length&&!dbT.error){
+      tasks={today:[],week:[]};
+      dbT.forEach(t=>{
+        const obj={id:t.id,name:t.name,assign:t.assign,priority:t.priority,status:t.status,deadline:t.deadline||'',note:t.note||'',done:t.done,created:t.created_at};
+        (t.section==='today'?tasks.today:tasks.week).push(obj);
+      });
+    }
+    // Calendar
+    const dbC=await sbGet('school_calendar');
+    if(dbC&&dbC.length&&!dbC.error){
+      scData={};
+      dbC.forEach(r=>{
+        if(!scData[r.school_code])scData[r.school_code]={};
+        const obj={};
+        if(r.type)obj.type=r.type;if(r.week)obj.week=r.week;
+        if(r.hol)obj.hol=r.hol;if(r.pub)obj.pub=r.pub;
+        scData[r.school_code][r.date_key]=obj;
+      });
+    }
+    saveData();
+    showSaveStatus('sync แล้ว ✓','#1D9E75');
+  }catch(e){
+    console.warn('Supabase load failed',e);
+    loadSavedData();
+    showSaveStatus('โหลดจาก local','#888');
+  }
+}
+
+function exportData(){
+  const blob=new Blob([JSON.stringify({schools,tasks,scData,nextNo},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const d=new Date();
+  a.download='MenuBoard_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';
+  a.click();
+}
+async function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.schools&&d.schools.length){schools=d.schools;for(const s of schools)await saveSchoolDb(s);}
+      if(d.tasks){tasks=d.tasks;for(const t of tasks.today)await saveTaskDb(t,'today');for(const t of tasks.week)await saveTaskDb(t,'week');}
+      if(d.scData){scData=d.scData;for(const code of Object.keys(scData))for(const dk of Object.keys(scData[code]))await saveCalDayDb(code,dk,scData[code][dk]);}
+      if(d.nextNo)nextNo=d.nextNo;
+      saveData();refreshAll();showSaveStatus('Import สำเร็จ ✓','#1D9E75');
+    }catch(err){alert('ไฟล์ไม่ถูกต้อง');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+function refreshAll(){updateMetrics();renderSchools();buildCalendar();renderTasks();renderFields();renderPreview();if(typeof scBuildSchoolDropdown==='function')scBuildSchoolDropdown();if(scSchool){scSchool=schools.find(s=>s.code===scSchool.code)||null;if(scSchool)scBuildGrid();}}
+let schools=[
+  {no:1,code:'ANS',name:'Amnuay Silpa School',team:'PL',week:'W1',deadline:'2025-05-05',status:'pending',assign:'me'},
+  {no:2,code:'BPH',name:'Bangkok International Preparatory and Secondary School',team:'PL',week:'W2',deadline:'2025-05-07',status:'done',assign:'jr'},
+  {no:3,code:'BES',name:'Berkeley International School',team:'WP',week:'W3',deadline:'2025-05-09',status:'pending',assign:'me'},
+  {no:4,code:'BCI',name:'British Columbia International School Bangkok',team:'PL',week:'W1',deadline:'2025-05-05',status:'overdue',assign:'jr'},
+  {no:5,code:'BAS',name:'BASIS International School Bangkok',team:'WP',week:'W2',deadline:'2025-05-08',status:'waitchef',assign:'me'},
+  {no:6,code:'GES',name:'International Christian School Nonthaburi',team:'PL',week:'W4',deadline:'2025-05-12',status:'pending',assign:'jr'},
+  {no:7,code:'BCBV',name:'Brighton College Vibhavadi',team:'PL',week:'W1',deadline:'2025-05-06',status:'done',assign:'me'},
+  {no:8,code:'BRT',name:'Brighton College Bangkok',team:'WP',week:'W3',deadline:'2025-05-10',status:'pending',assign:'jr'},
+  {no:9,code:'HAR',name:'Harrow International School Bangkok',team:'WP',week:'W2',deadline:'2025-05-08',status:'done',assign:'me'},
+  {no:10,code:'ICS',name:'International Community School',team:'PL',week:'W1',deadline:'2025-05-06',status:'overdue',assign:'jr'},
+  {no:11,code:'ISRP',name:'Regent International School Pattaya',team:'WP',week:'W4',deadline:'2025-05-14',status:'pending',assign:'me'},
+  {no:12,code:'ISB',name:'International School Association',team:'WP',week:'W2',deadline:'2025-05-09',status:'done',assign:'jr'},
+  {no:13,code:'UTS',name:'International Community School Udon Thani',team:'PL',week:'W3',deadline:'2025-05-11',status:'waitchef',assign:'me'},
+  {no:14,code:'KIS',name:'KIS International School',team:'PL',week:'W1',deadline:'2025-05-07',status:'done',assign:'jr'},
+  {no:15,code:'KMU',name:'King Mongkuts International Demonstration School',team:'PL',week:'W4',deadline:'2025-05-15',status:'pending',assign:'me'},
+  {no:16,code:'KCS',name:'Kings College International School Bangkok',team:'WP',week:'W2',deadline:'2025-05-09',status:'pending',assign:'jr'},
+  {no:17,code:'LFIB',name:'Lycee Francais International de Bangkok',team:'WP',week:'W3',deadline:'2025-05-12',status:'done',assign:'me'},
+  {no:18,code:'MID',name:'Minder Pathana Suksa School',team:'PL',week:'W1',deadline:'2025-05-06',status:'done',assign:'jr'},
+  {no:19,code:'MIS',name:'Mandarin International School',team:'PL',week:'W2',deadline:'2025-05-09',status:'pending',assign:'me'},
+  {no:20,code:'SSI',name:'Siam Singapore International Co., Ltd.',team:'PL',week:'W4',deadline:'2025-05-16',status:'pending',assign:'jr'},
+  {no:21,code:'SAM',name:'St.Andrews International School (Samakee)',team:'WP',week:'W3',deadline:'2025-05-13',status:'done',assign:'me'},
+  {no:22,code:'RISR',name:'Ruamrudee International School Ratchapruek Campus',team:'PL',week:'W1',deadline:'2025-05-07',status:'pending',assign:'jr'},
+  {no:23,code:'TRL',name:'Traill International School',team:'PL',week:'W2',deadline:'2025-05-10',status:'pending',assign:'me'},
+  {no:24,code:'VIS',name:'VERSO International School',team:'WP',week:'W4',deadline:'2025-05-17',status:'waitchef',assign:'jr'},
+  {no:25,code:'WCB',name:'Wellington College International School Bangkok',team:'WP',week:'W3',deadline:'2025-05-14',status:'pending',assign:'me'},
+  {no:26,code:'FSB',name:'The First Steps International Pre School',team:'WP',week:'W1',deadline:'2025-05-08',status:'done',assign:'jr'},
+  {no:27,code:'TSIS',name:'Thai Sikh International School Bangkok',team:'PL',week:'W2',deadline:'2025-05-11',status:'pending',assign:'me'},
+  {no:28,code:'KISR',name:'KIS International School Reignwood Park',team:'WP',week:'W4',deadline:'2025-05-18',status:'pending',assign:'jr'},
+  {no:29,code:'GISB',name:'Garden International School',team:'WP',week:'W3',deadline:'2025-05-15',status:'done',assign:'me'},
+  {no:30,code:'TCIS',name:'Thai Chinese International School',team:'PL',week:'W1',deadline:'2025-05-08',status:'pending',assign:'jr'},
+  {no:31,code:'MISP',name:'Mooltripakdee International School',team:'PL',week:'W2',deadline:'2025-05-12',status:'pending',assign:'me'},
+  {no:32,code:'KBH',name:'Knightsbridge House International School',team:'PL',week:'W4',deadline:'2025-05-20',status:'pending',assign:'jr'},
+  {no:33,code:'HIS',name:'Highgate International School Thailand',team:'WP',week:'W3',deadline:'2025-05-16',status:'pending',assign:'me'},
+  {no:34,code:'MISB',name:'Middleton International School Bangkok',team:'WP',week:'W1',deadline:'2025-05-09',status:'waitchef',assign:'jr'},
+];
+let nextNo=35;
+let scData={};
+let tasks={
+  today:[
+    {id:uid(),name:'BCI — Fill Template (Step C)',assign:'jr',priority:'urgent',status:'overdue',deadline:'2025-05-05',note:'',created:new Date().toISOString(),done:false},
+    {id:uid(),name:'BAS — Follow up Chef (Step A)',assign:'me',priority:'urgent',status:'waitchef',deadline:'',note:'',created:new Date().toISOString(),done:false},
+    {id:uid(),name:'HAR — Send Email to School (Step F)',assign:'me',priority:'medium',status:'pending',deadline:'2025-05-08',note:'QC ผ่านแล้ว',created:new Date().toISOString(),done:false},
+  ],
+  week:[
+    {id:uid(),name:'BCBV — Monthly Menu W1',assign:'me',priority:'medium',status:'pending',deadline:'2025-05-06',note:'',created:new Date().toISOString(),done:false},
+    {id:uid(),name:'MID — Monthly Menu W1',assign:'jr',priority:'medium',status:'pending',deadline:'2025-05-06',note:'',created:new Date().toISOString(),done:false},
+    {id:uid(),name:'KIS — Monthly Menu W1',assign:'jr',priority:'low',status:'pending',deadline:'2025-05-07',note:'',created:new Date().toISOString(),done:false},
+  ]
+};
+
+// ── LocalStorage ──────────────────────────────────────────────────
+function saveData(){
+  try{
+    localStorage.setItem(LS_KEY,JSON.stringify({schools,tasks,scData,nextNo}));
+    const t=new Date();
+    document.getElementById('save-status').textContent='Saveแล้ว '+t.getHours().toString().padStart(2,'0')+':'+t.getMinutes().toString().padStart(2,'0');
+  }catch(e){console.warn('save failed',e);}
+}
+function loadSavedData(){
+  try{
+    const raw=localStorage.getItem(LS_KEY);
+    if(!raw)return false;
+    const d=JSON.parse(raw);
+    if(d.schools&&d.schools.length)schools=d.schools;
+    if(d.tasks)tasks=d.tasks;
+    if(d.scData)scData=d.scData;
+    if(d.nextNo)nextNo=d.nextNo;
+    return true;
+  }catch(e){return false;}
+}
+function exportData(){
+  const blob=new Blob([JSON.stringify({schools,tasks,scData,nextNo},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);
+  const d=new Date();
+  a.download='MenuBoard_'+d.getFullYear()+String(d.getMonth()+1).padStart(2,'0')+String(d.getDate()).padStart(2,'0')+'.json';
+  a.click();
+}
+function importData(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    try{
+      const d=JSON.parse(ev.target.result);
+      if(d.schools&&d.schools.length)schools=d.schools;
+      if(d.tasks)tasks=d.tasks;
+      if(d.scData)scData=d.scData;
+      if(d.nextNo)nextNo=d.nextNo;
+      saveData();
+      refreshAll();
+      document.getElementById('save-status').textContent='Import สำเร็จ ✓';
+    }catch(err){alert('ไฟล์ไม่ถูกต้อง');}
+    e.target.value='';
+  };
+  reader.readAsText(file);
+}
+
+// ── Helpers ───────────────────────────────────────────────────────
+function uid(){return Date.now()+'_'+Math.random().toString(36).slice(2,6);}
+function fmtDDisplay(s){if(!s)return '—';const d=new Date(s+'T00:00:00');return d.getDate()+' '+['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'][d.getMonth()];}
+function fmtDFull(s){if(!s)return '';try{return new Date(s).toLocaleString('th-TH',{day:'numeric',month:'short',year:'2-digit',hour:'2-digit',minute:'2-digit'});}catch(e){return s;}}
+
+// ── School Tracker ────────────────────────────────────────────────
+let af='all',at='all';
+function pillSel(cls,opts,cur,onch){
+  return `<select class="pill ${cls}" onchange="${onch}">${opts.map(([v,l])=>`<option value="${v}"${v===cur?' selected':''}>${l}</option>`).join('')}</select>`;
+}
+function recolorPill(el,cls){
+  ['t-pl','t-wp','t-week','s-overdue','s-pending','s-done','s-waitchef','s-public','s-stuck','a-me','a-jr'].forEach(c=>el.classList.remove(c));
+  el.classList.add(cls);
+}
+function getCalWeek(s){
+  if(!s.deadline||!scData[s.code])return null;
+  const data=scData[s.code];
+  const d=new Date(s.deadline+'T00:00:00');
+  for(let i=-6;i<=6;i++){const k=new Date(d);k.setDate(k.getDate()+i);const key=k.toISOString().slice(0,10);if(data[key]&&data[key].type==='week')return data[key].week;}
+  return null;
+}
+function renderSchools(){
+  const q=(document.getElementById('search-school')?.value||'').toLowerCase();
+  const tbody=document.getElementById('school-tbody');
+  const rows=schools.filter(s=>(af==='all'||s.status===af)&&(at==='all'||s.team===at)&&(!q||s.name.toLowerCase().includes(q)||s.code.toLowerCase().includes(q)));
+  if(!rows.length){tbody.innerHTML='<tr><td colspan="9" class="empty">ไม่มีรายการ</td></tr>';return;}
+  tbody.innerHTML=rows.map(s=>{
+    const sm=SM[s.status]||SM.pending;
+    const dlColor=s.status==='overdue'?'#D85A30':'#1a1a1a';
+    const effWeek=getCalWeek(s)||s.week;
+    const teamSel=pillSel(s.team==='PL'?'t-pl':'t-wp',[['PL','PL'],['WP','WP']],s.team,`updS(${s.no},'team',this.value);recolorPill(this,this.value==='PL'?'t-pl':'t-wp')`);
+    const wkSel=pillSel('t-week',['W1','W2','W3','W4','W5','W6'].map(w=>[w,w]),effWeek,`updS(${s.no},'week',this.value)`);
+    const stSel=pillSel(sm.sc,Object.entries(SM).map(([k,v])=>[k,v.l]),s.status,`updS(${s.no},'status',this.value);recolorPill(this,'s-'+this.value)`);
+    const asSel=pillSel(s.assign==='me'?'a-me':'a-jr',[['me','ME'],['jr','JR']],s.assign,`updS(${s.no},'assign',this.value);recolorPill(this,this.value==='me'?'a-me':'a-jr')`);
+    return `<tr>
+      <td style="padding-left:10px"><button class="del-school-btn" onclick="deleteSchool(${s.no})" title="ลบ">×</button></td>
+      <td style="color:#aaa;font-size:12px">${s.no}</td>
+      <td><span class="code-tag">${s.code}</span></td>
+      <td style="font-size:12px" title="${s.name}">${s.name.length>34?s.name.slice(0,32)+'…':s.name}</td>
+      <td>${teamSel}</td>
+      <td>${wkSel}</td>
+      <td><div class="date-cell" style="color:${dlColor}">
+        <span style="font-size:13px;font-weight:500;pointer-events:none;position:relative;z-index:1">${fmtDDisplay(s.deadline)}</span>
+        <input type="date" value="${s.deadline}" onchange="updS(${s.no},'deadline',this.value)" style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;z-index:2">
+      </div></td>
+      <td>${stSel}</td>
+      <td>${asSel}</td>
+    </tr>`;
+  }).join('');
+  document.getElementById('m-total').textContent=schools.length;
+}
+function updS(no,field,val){const s=schools.find(x=>x.no===no);if(!s)return;s[field]=val;updateMetrics();buildCalendar();renderSchools();saveData();saveSchoolDb(s);}
+function deleteSchool(no){if(!confirm('ลบSchoolนี้ออก?'))return;deleteSchoolDb(no);schools=schools.filter(x=>x.no!==no);updateMetrics();buildCalendar();renderSchools();saveData();}
+function addSchool(){
+  const code=document.getElementById('ns-code').value.trim().toUpperCase();
+  const name=document.getElementById('ns-name').value.trim();
+  if(!code||!name){alert('กรุณากรอก CODE และชื่อSchool');return;}
+  if(schools.find(s=>s.code===code)){alert('CODE นี้มีอยู่แล้ว');return;}
+  const s={no:nextNo++,code,name,team:document.getElementById('ns-team').value,week:document.getElementById('ns-week').value,deadline:document.getElementById('ns-deadline').value||'',status:'pending',assign:'me'};
+  schools.push(s);
+  document.getElementById('ns-code').value='';document.getElementById('ns-name').value='';document.getElementById('ns-deadline').value='';
+  updateMetrics();buildCalendar();renderSchools();saveData();saveSchoolDb(s);
+}
+function setFilter(f,btn){af=f;document.querySelectorAll('.filter-btn:not(#btn-pl):not(#btn-wp)').forEach(b=>b.classList.remove('on'));btn.classList.add('on');renderSchools();}
+function setTeam(t,btn){if(at===t){at='all';btn.classList.remove('on');}else{at=t;['btn-pl','btn-wp'].forEach(id=>document.getElementById(id).classList.remove('on'));btn.classList.add('on');}renderSchools();}
+function filterSchools(){renderSchools();}
+
+// ── Metrics ───────────────────────────────────────────────────────
+function updateMetrics(){
+  document.getElementById('m-pending').textContent=schools.filter(s=>s.status==='pending').length;
+  document.getElementById('m-done').textContent=schools.filter(s=>s.status==='done').length;
+  document.getElementById('m-overdue').textContent=schools.filter(s=>s.status==='overdue').length;
+  document.getElementById('m-total').textContent=schools.length;
+  const ov=schools.filter(s=>s.status==='overdue');
+  const ab=document.getElementById('alert-box');
+  if(ov.length){ab.style.display='flex';document.getElementById('alert-text').textContent=`มี ${ov.length} รร. เลย deadline: ${ov.map(s=>s.code).join(', ')}`;}
+  else ab.style.display='none';
+}
+
+// ── Tasks ─────────────────────────────────────────────────────────
+function addTask(sec){
+  const inp=document.getElementById('in-'+sec);
+  const txt=inp.value.trim();
+  if(!txt)return;
+  const t={id:uid(),name:txt,assign:document.getElementById('as-'+sec).value,priority:document.getElementById('pr-'+sec).value,status:'pending',deadline:'',note:'',created:new Date().toISOString(),done:false,checklist:defaultChecklist()};
+  tasks[sec].unshift(t);
+  inp.value='';
+  renderTasks();
+  saveData();
+  saveTaskDb(t,sec);
+}
+document.getElementById('in-today').addEventListener('keydown',e=>{if(e.key==='Enter')addTask('today');});
+document.getElementById('in-week').addEventListener('keydown',e=>{if(e.key==='Enter')addTask('week');});
+
+function deleteTask(sec,id){
+  deleteTaskDb(id);
+  tasks[sec]=tasks[sec].filter(x=>x.id!==id);
+  renderTasks();saveData();
+}
+let taskFilter='all';
+function setTaskFilter(f,btn){
+  taskFilter=f;
+  document.querySelectorAll('#page-daily .filter-btn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  renderTasks();
+}
+
+function defaultChecklist(){
+  return [
+    {id:uid(),text:'Receive Menu',done:false},
+    {id:uid(),text:'Check Rotation Menu',done:false},
+    {id:uid(),text:'Fill Template',done:false},
+    {id:uid(),text:'QC spelling / allergen / dates',done:false},
+    {id:uid(),text:'Export PDF / PNG',done:false},
+    {id:uid(),text:'Send Email to School',done:false},
+    {id:uid(),text:'Update Status',done:false}
+  ];
+}
+function ensureChecklist(t){
+  if(!Array.isArray(t.checklist)) t.checklist=[];
+  return t.checklist;
+}
+function checklistStats(t){
+  const list=ensureChecklist(t);
+  const total=list.length;
+  const done=list.filter(i=>i.done).length;
+  const pct=total?Math.round(done*100/total):0;
+  return {total,done,pct};
+}
+function checklistMini(t){
+  const st=checklistStats(t);
+  if(!st.total)return '';
+  return `<div class="task-progress-wrap"><div class="task-progress-track"><div class="task-progress-fill" style="width:${st.pct}%"></div></div><span class="task-progress-text">${st.done}/${st.total}</span></div>`;
+}
+
+function renderTasks(){
+  ['today','week'].forEach(sec=>{
+    const el=document.getElementById('tasks-'+sec);
+    let list=tasks[sec];
+    if(taskFilter==='me')list=list.filter(t=>t.assign==='me');
+    else if(taskFilter==='jr')list=list.filter(t=>t.assign==='jr');
+    else if(taskFilter==='urgent')list=list.filter(t=>t.priority==='urgent');
+    else if(taskFilter==='pending')list=list.filter(t=>t.status==='pending'&&!t.done);
+    else if(taskFilter==='done')list=list.filter(t=>t.done);
+    if(!list.length){el.innerHTML='<div class="empty">ไม่มีงานในหมวดนี้</div>';return;}
+    el.innerHTML=list.map(t=>{
+      const s=SM[t.status]||SM.pending,p=PM[t.priority]||PM.medium;
+      const av=t.assign==='me'?'<span class="dot-me">ME</span>':'<span class="dot-jr">JR</span>';
+      const dl=t.deadline?`<span style="font-size:11px;color:#aaa">${fmtDDisplay(t.deadline)}</span>`:'';
+      return `<div class="task-item">
+        <input type="checkbox" class="task-check" ${t.done?'checked':''} onchange="toggleDone('${sec}','${t.id}',this)">
+        <div class="task-body" ondblclick="openModal('${sec}','${t.id}')">
+          <div class="task-name${t.done?' done':''}">${t.name}</div>
+          <div class="task-meta-row">${av}<span class="badge ${s.c}">${s.l}</span><span class="badge ${p.c}">${p.l}</span>${dl}<span class="task-hint">double-click เพื่อแก้ไข</span></div>${checklistMini(t)}
+        </div>
+        <button class="del-btn" onclick="deleteTask('${sec}','${t.id}')">ลบ</button>
+      </div>`;
+    }).join('');
+  });
+}
+function toggleDone(sec,id,cb){const t=tasks[sec].find(x=>x.id===id);if(t){t.done=cb.checked;if(t.done)t.status='done';renderTasks();saveData();saveTaskDb(t,sec);}}
+
+// ── Task Modal ────────────────────────────────────────────────────
+let mSec='',mId='';
+function openModal(sec,id){
+  const t=tasks[sec].find(x=>x.id===id);if(!t)return;
+  mSec=sec;mId=id;
+  document.getElementById('m-heading').textContent=sec==='today'?'งานวันนี้':'งานสัปดาห์นี้';
+  document.getElementById('m-created').textContent='สร้างเมื่อ: '+fmtDFull(t.created);
+  document.getElementById('m-name').value=t.name;
+  document.getElementById('m-deadline').value=t.deadline||'';
+  document.getElementById('m-assign').value=t.assign;
+  document.getElementById('m-priority').value=t.priority;
+  document.getElementById('m-status').value=t.status;
+  document.getElementById('m-note').value=t.note||'';
+  ensureChecklist(t);
+  renderChecklistEditor();
+  document.getElementById('overlay').classList.add('open');
+}
+
+function currentModalTask(){return tasks[mSec]?tasks[mSec].find(x=>x.id===mId):null;}
+function renderChecklistEditor(){
+  const t=currentModalTask();if(!t)return;
+  const list=ensureChecklist(t);
+  const box=document.getElementById('task-checklist');
+  const st=checklistStats(t);
+  document.getElementById('check-summary').textContent=`${st.done} / ${st.total} Complete`;
+  document.getElementById('m-check-progress').style.width=st.pct+'%';
+  if(!list.length){box.innerHTML='<div class="check-empty">ยังไม่มี checklist — เพิ่มข้อแรกได้เลย</div>';return;}
+  box.innerHTML=list.map(item=>`<div class="check-row${item.done?' done':''}">
+    <input type="checkbox" ${item.done?'checked':''} onchange="toggleChecklistItem('${item.id}',this.checked)">
+    <div class="check-text">${escapeHtml(item.text)}</div>
+    <button class="check-del" type="button" onclick="deleteChecklistItem('${item.id}')">ลบ</button>
+  </div>`).join('');
+}
+function escapeHtml(s){return String(s||'').replace(/[&<>"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[m]));}
+function addChecklistItem(){
+  const t=currentModalTask();if(!t)return;
+  const inp=document.getElementById('new-check-item');
+  const txt=inp.value.trim();if(!txt)return;
+  ensureChecklist(t).push({id:uid(),text:txt,done:false});
+  inp.value='';renderChecklistEditor();renderTasks();saveData();
+}
+function toggleChecklistItem(id,checked){
+  const t=currentModalTask();if(!t)return;
+  const item=ensureChecklist(t).find(x=>x.id===id);if(!item)return;
+  item.done=checked;
+  const st=checklistStats(t);
+  if(st.total&&st.done===st.total){t.status='done';t.done=true;document.getElementById('m-status').value='done';}
+  else if(t.status==='done'){t.status='pending';t.done=false;document.getElementById('m-status').value='pending';}
+  renderChecklistEditor();renderTasks();saveData();
+}
+function deleteChecklistItem(id){
+  const t=currentModalTask();if(!t)return;
+  t.checklist=ensureChecklist(t).filter(x=>x.id!==id);
+  renderChecklistEditor();renderTasks();saveData();
+}
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&document.activeElement&&document.activeElement.id==='new-check-item')addChecklistItem();
+});
+
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+function bgClose(e){if(e.target===document.getElementById('overlay'))closeModal();}
+function saveModal(){
+  const t=tasks[mSec].find(x=>x.id===mId);if(!t)return;
+  t.name=document.getElementById('m-name').value||t.name;
+  t.deadline=document.getElementById('m-deadline').value;
+  t.assign=document.getElementById('m-assign').value;
+  t.priority=document.getElementById('m-priority').value;
+  t.status=document.getElementById('m-status').value;
+  t.note=document.getElementById('m-note').value;
+  t.done=t.status==='done';
+  closeModal();renderTasks();saveData();saveTaskDb(t,mSec);
+}
+
+// ── Overview Calendar ─────────────────────────────────────────────
+let calY=2025,calM=4;
+function buildCalendar(){
+  const grid=document.getElementById('cal-grid');
+  const first=new Date(calY,calM,1).getDay(),dim=new Date(calY,calM+1,0).getDate(),dprev=new Date(calY,calM,0).getDate();
+  document.getElementById('cal-title').textContent=MONTHS[calM]+' '+calY;
+  const byDay={};schools.forEach(s=>{if(!s.deadline)return;const d=new Date(s.deadline+'T00:00:00');if(d.getFullYear()===calY&&d.getMonth()===calM){const day=d.getDate();if(!byDay[day])byDay[day]=[];byDay[day].push(s);}});
+  const dows=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let h=dows.map(d=>`<div class="cal-dow">${d}</div>`).join('');
+  for(let i=0;i<first;i++)h+=`<div class="cal-cell other-month"><span class="cal-day-num">${dprev-first+1+i}</span></div>`;
+  const td=new Date();
+  for(let d=1;d<=dim;d++){
+    const isT=(calY===td.getFullYear()&&calM===td.getMonth()&&d===td.getDate());
+    const evs=byDay[d]||[];const hasEv=evs.length>0;
+    let ev='';if(hasEv){ev='<div class="cal-events">'+evs.slice(0,3).map(s=>`<div class="cal-event ${(SM[s.status]||SM.pending).e}">${s.code}</div>`).join('');if(evs.length>3)ev+=`<div class="cal-more">+${evs.length-3}</div>`;ev+='</div>';}
+    const cls=['cal-cell',isT?'is-today':'',hasEv?'has-events':''].filter(Boolean).join(' ');
+    h+=`<div class="${cls}" ${hasEv?`onclick="showDay(${d})"`:''}><span class="cal-day-num">${d}</span>${ev}</div>`;
+  }
+  const used=first+dim;for(let i=1;i<=(used%7===0?0:7-used%7);i++)h+=`<div class="cal-cell other-month"><span class="cal-day-num">${i}</span></div>`;
+  grid.innerHTML=h;
+}
+function showDay(d){
+  document.getElementById('side-date-label').textContent=d+' '+MONTHS[calM]+' '+calY;
+  const evs=schools.filter(s=>{if(!s.deadline)return false;const dt=new Date(s.deadline+'T00:00:00');return dt.getFullYear()===calY&&dt.getMonth()===calM&&dt.getDate()===d;});
+  if(!evs.length){document.getElementById('side-content').innerHTML='<div class="side-empty">ไม่มี deadline</div>';return;}
+  document.getElementById('side-content').innerHTML=evs.map(s=>{
+    const sm=SM[s.status]||SM.pending;const tb=s.team==='PL'?'<span class="tag-pl">PL</span>':'<span class="tag-wp">WP</span>';
+    const av=s.assign==='me'?'<span class="dot-me" style="width:18px;height:18px;font-size:9px">ME</span>':'<span class="dot-jr" style="width:18px;height:18px;font-size:9px">JR</span>';
+    return `<div class="side-item"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-size:12px;font-weight:500">${s.code}</span>${av}</div><div style="font-size:11px;color:#888;margin:2px 0">${s.name.length>28?s.name.slice(0,26)+'…':s.name}</div><div style="display:flex;gap:4px;flex-wrap:wrap;margin-top:3px">${tb}<span class="wtag">${s.week}</span><span class="badge ${sm.c}">${sm.l}</span></div></div>`;
+  }).join('');
+}
+function changeMonth(dir){calM+=dir;if(calM>11){calM=0;calY++;}if(calM<0){calM=11;calY--;}buildCalendar();document.getElementById('side-date-label').textContent='Select a date to view details';document.getElementById('side-content').innerHTML='<div class="side-empty">Click a date with deadline</div>';}
+
+// ── School Calendar ───────────────────────────────────────────────
+let scSchool=null,scY=new Date().getFullYear(),scM=new Date().getMonth();
+let scSelDays=[],scDragging=false,scDragAnchor=null;
+
+function scSearch(){
+  const q=document.getElementById('sc-search').value.trim();
+  const box=document.getElementById('sc-suggestions');
+  if(!q){box.style.display='none';return;}
+  const hits=scGetFilteredSchools().filter(s=>s.code.toUpperCase().includes(q.toUpperCase())||s.name.toLowerCase().includes(q.toLowerCase())).slice(0,8);
+  if(!hits.length){box.style.display='none';return;}
+  box.style.display='block';
+  box.innerHTML=hits.map(s=>`<div class="sc-sug-item" onclick="scSelect(${s.no})"><span class="code-tag">${s.code}</span><span>${s.name}</span><span style="margin-left:auto;color:#aaa;font-size:11px">${s.team}</span></div>`).join('');
+}
+document.addEventListener('click',e=>{if(!document.getElementById('sc-search').contains(e.target))document.getElementById('sc-suggestions').style.display='none';});
+
+function scSelect(no){
+  scSchool=schools.find(s=>s.no===no);
+  document.getElementById('sc-suggestions').style.display='none';
+  document.getElementById('sc-search').value=scSchool.code;
+  document.getElementById('sc-name-label').textContent=scSchool.name;
+  document.getElementById('sc-sub-label').textContent=`${scSchool.code} · ${scSchool.team} Team`;
+  document.getElementById('sc-no-school').style.display='none';
+  if(!scData[scSchool.code])scData[scSchool.code]={};
+  // Show year view first
+  scShowYear();
+}
+
+function scShowYear(){
+  document.getElementById('sc-month-view').style.display='none';
+  document.getElementById('sc-year-view').style.display='block';
+  document.getElementById('sc-month-nav').style.display='none';
+  document.getElementById('sc-year-nav').style.display='flex';
+  document.getElementById('sc-year-title').textContent=scY;
+  scBuildYearView();
+}
+
+function scChangeYear(dir){
+  scY+=dir;
+  document.getElementById('sc-year-title').textContent=scY;
+  if(document.getElementById('sc-year-view').style.display!=='none') scBuildYearView();
+  else{scBuildGrid();scInitEvents();}
+}
+
+function scBuildYearView(){
+  const yg=document.getElementById('sc-year-grid');
+  yg.style.display='grid';
+  yg.className='sc-year-grid';
+  const data=scData[scSchool.code]||{};
+  const today=new Date();
+  yg.innerHTML=MONTHS.map((mName,mi)=>{
+    const first=new Date(scY,mi,1).getDay();
+    const dim=new Date(scY,mi+1,0).getDate();
+    // count events for badge
+    let hasDot=false;
+    let cells='';
+    // empty leading cells
+    for(let i=0;i<first;i++) cells+=`<div class="sc-mini-cell mc-other"></div>`;
+    for(let d=1;d<=dim;d++){
+      const key=dateKey(scY,mi,d);
+      const dd=data[key];
+      let cls='mc-empty';
+      if(dd){
+        hasDot=true;
+        if(dd.type==='week') cls='mc-w'+(dd.week||'').replace('W','');
+        else if(dd.type==='holiday') cls='mc-hol';
+        else if(dd.type==='public') cls='mc-pub';
+      }
+      cells+=`<div class="sc-mini-cell ${cls}"></div>`;
+    }
+    const used=first+dim;const rem=used%7===0?0:7-used%7;
+    for(let i=0;i<rem;i++) cells+=`<div class="sc-mini-cell mc-other"></div>`;
+    const isCurrentMonth=(scY===today.getFullYear()&&mi===today.getMonth());
+    return `<div class="sc-mini-month" onclick="scOpenMonth(${mi})" style="${isCurrentMonth?'outline:2px solid #185FA5;':''}">
+      <div class="sc-mini-header">${mName}</div>
+      <div class="sc-mini-grid">${cells}</div>
+    </div>`;
+  }).join('');
+}
+
+function scOpenMonth(mi){
+  scM=mi;
+  document.getElementById('sc-year-view').style.display='none';
+  document.getElementById('sc-month-view').style.display='block';
+  document.getElementById('sc-month-nav').style.display='flex';
+  document.getElementById('sc-year-nav').style.display='none';
+  document.getElementById('sc-cal-grid').style.display='grid';
+  scBuildGrid();
+  scInitEvents();
+}
+
+function scChangeMonth(dir){
+  scM+=dir;
+  if(scM>11){scM=0;scY++;}
+  if(scM<0){scM=11;scY--;}
+  document.getElementById('sc-month-title').textContent=MONTHS[scM]+' '+scY;
+  if(scSchool){scBuildGrid();scInitEvents();}
+}
+
+function dateKey(y,m,d){return y+'-'+String(m+1).padStart(2,'0')+'-'+String(d).padStart(2,'0');}
+
+function scBuildGrid(){
+  document.getElementById('sc-month-title').textContent=MONTHS[scM]+' '+scY;
+  const first=new Date(scY,scM,1).getDay(),dim=new Date(scY,scM+1,0).getDate(),dprev=new Date(scY,scM,0).getDate();
+  const today=new Date();
+  const data=scData[scSchool.code]||{};
+  const dows=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  let h=dows.map(d=>`<div class="sc-dow">${d}</div>`).join('');
+  for(let i=0;i<first;i++){
+    const dd=dprev-first+1+i;
+    h+=`<div class="sc-cell other-month"><span class="sc-cell-num">${dd}</span></div>`;
+  }
+  for(let d=1;d<=dim;d++){
+    const key=dateKey(scY,scM,d);
+    const isT=(scY===today.getFullYear()&&scM===today.getMonth()&&d===today.getDate());
+    const dd=data[key];
+    let tag1='',tag2='';
+    if(dd){
+      if(dd.type==='week') tag1=`<span class="sc-cell-tag ${WK_CSS[dd.week]||''}">${dd.week}</span>`;
+      else if(dd.type==='holiday') tag1=`<span class="sc-cell-tag ${HOL_CSS[dd.hol]||'hol-school'}">${HOL_LABEL[dd.hol]||'Holiday'}</span>`;
+    }
+    if(dd&&dd.pub){
+      const pubLabel=dd.pub==='weekly'?'Weekly Public':'Monthly Public';
+      const pubCls=dd.pub==='weekly'?'pub-weekly':'pub-monthly';
+      tag2=`<span class="sc-cell-tag ${pubCls}">${pubLabel}</span>`;
+    }
+    h+=`<div class="sc-cell${isT?' sc-today':''}" data-key="${key}"><span class="sc-cell-num">${d}</span>${tag1}${tag2}</div>`;
+  }
+  const used=first+dim;const rem=used%7===0?0:7-used%7;
+  for(let i=1;i<=rem;i++)h+=`<div class="sc-cell other-month"><span class="sc-cell-num">${i}</span></div>`;
+  document.getElementById('sc-cal-grid').innerHTML=h;
+}
+
+function scInitEvents(){
+  const grid=document.getElementById('sc-cal-grid');
+  const newGrid=grid.cloneNode(true);
+  grid.parentNode.replaceChild(newGrid,grid);
+  const g=document.getElementById('sc-cal-grid');
+
+  const pickCell=(e)=>{
+    const cell=e.target.closest('#sc-cal-grid .sc-cell[data-key]');
+    if(!cell||cell.classList.contains('other-month'))return null;
+    return cell;
+  };
+  const addCell=(cell)=>{
+    if(!cell)return;
+    const key=cell.dataset.key;
+    if(!scSelDays.includes(key))scSelDays.push(key);
+    scHighlight();
+  };
+
+  g.addEventListener('pointerdown',e=>{
+    const cell=pickCell(e);
+    if(!cell||e.button!==0)return;
+    e.preventDefault();
+    closeCtx();
+    scDragging=true;
+    scSelDays=[];
+    addCell(cell);
+    g.setPointerCapture?.(e.pointerId);
+  });
+
+  g.addEventListener('pointerover',e=>{
+    if(!scDragging)return;
+    addCell(pickCell(e));
+  });
+
+  g.addEventListener('pointerup',e=>{
+    if(!scDragging)return;
+    scDragging=false;
+    g.releasePointerCapture?.(e.pointerId);
+    if(scSelDays.length>0){
+      const vw=window.innerWidth,vh=window.innerHeight;
+      let x=e.clientX+12, y=e.clientY+12;
+      if(x+220>vw)x=e.clientX-230;
+      if(y+340>vh)y=e.clientY-350;
+      showCtx(x,y);
+    }
+  });
+}
+
+function scHighlight(){
+  document.querySelectorAll('#sc-cal-grid [data-key]').forEach(el=>{
+    el.classList.toggle('sc-sel',scSelDays.includes(el.dataset.key));
+  });
+}
+document.addEventListener('mouseup',e=>{
+  if(scDragging){scDragging=false;}
+});
+document.addEventListener('selectstart',e=>{if(scDragging)e.preventDefault();});
+
+function showCtx(x,y){
+  const p=document.getElementById('ctx-popup');
+  p.style.left=x+'px';
+  p.style.top=y+'px';
+  p.classList.add('show');setTimeout(keepCtxPopupInView,0);
+}
+function closeCtx(){
+  document.getElementById('ctx-popup').classList.remove('show');
+  scSelDays=[];
+  if(scSchool){
+    const monthView=document.getElementById('sc-month-view');
+    if(monthView&&monthView.style.display!=='none'){
+      scBuildGrid();scInitEvents();
+    } else {
+      scBuildYearView();
+    }
+  }
+}
+
+document.addEventListener('mousedown',e=>{
+  const p=document.getElementById('ctx-popup');
+  if(p.classList.contains('show')&&!p.contains(e.target)){closeCtx();}
+});
+document.addEventListener('keydown',e=>{if(e.key==='Escape')closeCtx();});
+
+function assignWeek(wk){
+  if(!scSchool||!scSelDays.length)return;
+  if(!scData[scSchool.code])scData[scSchool.code]={};
+  scSelDays.forEach(d=>{
+    const ex=scData[scSchool.code][d]||{};
+    scData[scSchool.code][d]={...ex,type:'week',week:wk};
+    saveCalDayDb(scSchool.code,d,scData[scSchool.code][d]);
+  });
+  closeCtx();renderSchools();saveData();
+}
+function assignHoliday(hol){
+  if(!scSchool||!scSelDays.length)return;
+  if(!scData[scSchool.code])scData[scSchool.code]={};
+  scSelDays.forEach(d=>{
+    const ex=scData[scSchool.code][d]||{};
+    scData[scSchool.code][d]={...ex,type:'holiday',hol};
+    saveCalDayDb(scSchool.code,d,scData[scSchool.code][d]);
+  });
+  closeCtx();saveData();
+}
+function assignPublic(pub){
+  if(!scSchool||!scSelDays.length)return;
+  if(!scData[scSchool.code])scData[scSchool.code]={};
+  scSelDays.forEach(d=>{
+    const ex=scData[scSchool.code][d]||{};
+    if(ex.pub===pub){delete scData[scSchool.code][d].pub;}
+    else{scData[scSchool.code][d]={...ex,pub};}
+    saveCalDayDb(scSchool.code,d,scData[scSchool.code][d]||{});
+  });
+  closeCtx();saveData();
+}
+function clearDays(){
+  if(!scSchool||!scSelDays.length)return;
+  if(!scData[scSchool.code])scData[scSchool.code]={};
+  scSelDays.forEach(d=>{
+    deleteCalDayDb(scSchool.code,d);
+    delete scData[scSchool.code][d];
+  });
+  closeCtx();renderSchools();saveData();
+}
+
+// ── Email ─────────────────────────────────────────────────────────
+let eType='send';const fv={};
+const nM=MONTHS[(new Date().getMonth()+1)%12];const CY=new Date().getFullYear();
+const tpls={
+  send:{fields:[{id:'school',label:'ชื่อSchool',type:'ss'},{id:'coordinator',label:'coordinator',type:'text',ph:'e.g. Ms. Sarah'},{id:'month',label:'เดือน',type:'sel',opts:MONTHS,def:nM},{id:'week',label:'Rotation Week',type:'sel',opts:['Week 1','Week 2','Week 3','Week 4'],def:'Week 1'},{id:'sender',label:'ชื่อผู้ส่ง',type:'text',ph:'e.g. Nook'}],
+    sub:(f)=>`[Menu] ${f.school||'[School]'} — ${f.month||nM} ${CY} Rotation ${f.week||'Week 1'}`,
+    body:(f)=>`Dear ${f.coordinator||'[Coordinator]'},\n\nI hope this message finds you well.\n\nPlease find attached the monthly menu for ${f.month||nM} ${CY} (${f.week||'Week 1'} Rotation) for ${f.school||'[School]'}.\n\nKindly review the menu and let us know if any adjustments are needed.\n\nBest regards,\n${f.sender||'[Your Name]'}\nMenu Support Coordinator\nCatering Department`},
+  chef:{fields:[{id:'chef',label:'ชื่อเชฟ',type:'text',ph:'e.g. Chef James'},{id:'school',label:'สำหรับSchool',type:'ss'},{id:'month',label:'เดือน',type:'sel',opts:MONTHS,def:nM},{id:'week',label:'Week',type:'sel',opts:['Week 1','Week 2','Week 3','Week 4'],def:'Week 1'},{id:'deadline',label:'Deadline',type:'text',ph:'e.g. 8 May'},{id:'sender',label:'ชื่อผู้ส่ง',type:'text',ph:'e.g. Nook'}],
+    sub:(f)=>`[Menu Request] ${f.school||'[School]'} — ${f.month||nM} ${CY} ${f.week||'Week 1'}`,
+    body:(f)=>`Dear ${f.chef||'Chef'},\n\nI hope you're doing well.\n\nI'm writing to kindly request the menu for ${f.school||'[School]'} for ${f.month||nM} ${CY} (${f.week||'Week 1'} Rotation).\n\nCould you please send it over by ${f.deadline||'[Date]'}?\n\nThank you!\n\nBest regards,\n${f.sender||'[Your Name]'}\nMenu Support Coordinator`},
+  revision:{fields:[{id:'school',label:'ชื่อSchool',type:'ss'},{id:'coordinator',label:'coordinator',type:'text',ph:'e.g. Mr. David'},{id:'month',label:'เดือน',type:'sel',opts:MONTHS,def:nM},{id:'week',label:'Week',type:'sel',opts:['Week 1','Week 2','Week 3','Week 4'],def:'Week 1'},{id:'changes',label:'รายละเอียดที่แก้ไข',type:'text',ph:'e.g. updated allergen info'},{id:'sender',label:'ชื่อผู้ส่ง',type:'text',ph:'e.g. Nook'}],
+    sub:(f)=>`[Menu Revised] ${f.school||'[School]'} — ${f.month||nM} ${CY} ${f.week||'Week 1'}`,
+    body:(f)=>`Dear ${f.coordinator||'[Coordinator]'},\n\nThank you for your feedback.\n\nPlease find attached the revised menu for ${f.month||nM} ${CY} (${f.week||'Week 1'} Rotation) for ${f.school||'[School]'}.\n\nChanges made: ${f.changes||'[Description]'}.\n\nBest regards,\n${f.sender||'[Your Name]'}\nMenu Support Coordinator`},
+  delay:{fields:[{id:'school',label:'ชื่อSchool',type:'ss'},{id:'coordinator',label:'coordinator',type:'text',ph:'e.g. Ms. Linda'},{id:'month',label:'เดือน',type:'sel',opts:MONTHS,def:nM},{id:'newdate',label:'วันที่ส่งใหม่',type:'text',ph:'e.g. 16 May'},{id:'reason',label:'สาเหตุ (optional)',type:'text',ph:'e.g. awaiting chef confirmation'},{id:'sender',label:'ชื่อผู้ส่ง',type:'text',ph:'e.g. Nook'}],
+    sub:(f)=>`[Menu Update] ${f.school||'[School]'} — ${f.month||nM} ${CY} Delivery Delay`,
+    body:(f)=>`Dear ${f.coordinator||'[Coordinator]'},\n\nI am writing to inform you of a slight delay sending the ${f.month||nM} ${CY} menu for ${f.school||'[School]'}.${f.reason?'\n\nThis is due to '+f.reason+'.':''}\n\nWe expect to send it by ${f.newdate||'[New Date]'}. We sincerely apologise.\n\nBest regards,\n${f.sender||'[Your Name]'}\nMenu Support Coordinator`},
+};
+function selectType(t,btn){eType=t;document.querySelectorAll('.email-type-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');renderFields();renderPreview();}
+function renderFields(){
+  const tpl=tpls[eType];
+  const sOpts=schools.map(s=>`<option value="${s.name}">${s.code} — ${s.name}</option>`).join('');
+  document.getElementById('fields-area').innerHTML=tpl.fields.map(f=>{
+    const val=fv[eType+f.id]||f.def||'';
+    if(f.type==='ss')return `<div class="field-group"><div class="field-label">${f.label}</div><select class="field-select" onchange="updF('${f.id}',this.value)"><option value="">— Select School —</option>${sOpts}</select></div>`;
+    if(f.type==='sel'){const o=f.opts.map(x=>`<option${x===val?' selected':''}>${x}</option>`).join('');return `<div class="field-group"><div class="field-label">${f.label}</div><select class="field-select" onchange="updF('${f.id}',this.value)">${o}</select></div>`;}
+    return `<div class="field-group"><div class="field-label">${f.label}</div><input class="field-input" type="text" placeholder="${f.ph||''}" value="${val}" oninput="updF('${f.id}',this.value)"></div>`;
+  }).join('');
+}
+function updF(id,val){fv[eType+id]=val;renderPreview();}
+function gF(){const f={};tpls[eType].fields.forEach(x=>{f[x.id]=fv[eType+x.id]||x.def||'';});return f;}
+function renderPreview(){const tpl=tpls[eType],f=gF();document.getElementById('preview-subject').textContent=tpl.sub(f);document.getElementById('preview-body').textContent=tpl.body(f);}
+function copyText(part){
+  const tpl=tpls[eType],f=gF();
+  navigator.clipboard.writeText(part==='subject'?tpl.sub(f):tpl.body(f)).then(()=>{
+    const btn=document.getElementById('copy-'+part+'-btn');btn.textContent='Copied!';btn.classList.add('copied');
+    setTimeout(()=>{btn.textContent=part==='subject'?'Copy subject':'Copy body';btn.classList.remove('copied');},2000);
+  });
+}
+
+// ── SOP Preflight ─────────────────────────────────────────────────
+['Spelling — ชื่อเมนูภาษาอังกฤษถูกต้อง ไม่มีผิด','Allergen Icons — ไอคอนแพ้อาหารครบและถูกต้องทุกรายการ','Dates — วันที่/เดือน/ปีถูกต้อง ตรงกับ week ที่ส่ง','โลโก้ของSchoolถูกต้อง ไม่ใช่โลโก้ รร. อื่น','Format/ขนาดไฟล์ตรงตามที่ รร. กำหนด','ชื่อไฟล์: CODE_Month_WeekX (e.g. HAR_May_W2)'].forEach((p,i)=>{
+  document.getElementById('preflight-list').insertAdjacentHTML('beforeend',`<div class="preflight-item"><input type="checkbox" style="width:16px;height:16px;cursor:pointer;accent-color:#1D9E75;flex-shrink:0;margin-top:2px" id="pf${i}"><label for="pf${i}" style="font-size:13px;cursor:pointer">${p}</label></div>`);
+});
+
+// ── Tab ───────────────────────────────────────────────────────────
+function switchTab(name,btn){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');document.getElementById('page-'+name).classList.add('active');
+
+  if(id==='reports' && typeof renderReports==='function')renderReports();
+  if(id==='dashboard' && typeof renderDashboard==='function')renderDashboard();}
+
+
+function getLocalChecklistById(){
+  const map={};
+  try{
+    const raw=localStorage.getItem(LS_KEY); if(!raw)return map;
+    const d=JSON.parse(raw); if(!d.tasks)return map;
+    ['today','week'].forEach(sec=>(d.tasks[sec]||[]).forEach(t=>{if(t.id&&Array.isArray(t.checklist))map[t.id]=t.checklist;}));
+  }catch(e){}
+  return map;
+}
+
+// ── Boot ──────────────────────────────────────────────────────────
+document.getElementById('today-label').textContent=new Date().toLocaleDateString('th-TH',{weekday:'long',day:'numeric',month:'long',year:'numeric'});
+document.getElementById('sc-month-title').textContent=MONTHS[scM]+' '+scY;
+
+async function boot(){
+  const st=document.getElementById('save-status');
+  st.textContent='กำลังโหลดข้อมูล...';
+
+  try{
+    // ── Load schools from Supabase ──
+    const rawSchools=await sbGet('schools','order=no.asc');
+    if(rawSchools&&rawSchools.length>0){
+      schools=rawSchools.map(s=>({
+        no:s.no,code:s.code,name:s.name,team:s.team||'PL',
+        week:s.week||'W1',deadline:s.deadline||'',
+        status:s.status||'pending',assign:s.assign||'me'
+      }));
+      nextNo=Math.max(...schools.map(s=>s.no))+1;
+    } else {
+      // First time: upload default schools to Supabase
+      await Promise.all(schools.map(s=>saveSchoolDb(s)));
+    }
+
+    // ── Load tasks from Supabase ──
+    const localChecklist=getLocalChecklistById();
+    const rawTasks=await sbGet('tasks','order=created_at.desc');
+    if(rawTasks&&rawTasks.length>0){
+      tasks={today:[],week:[]};
+      rawTasks.forEach(t=>{
+        const sec=t.section==='week'?'week':'today';
+        tasks[sec].push({
+          id:t.id,name:t.name,assign:t.assign||'me',
+          priority:t.priority||'medium',status:t.status||'pending',
+          deadline:t.deadline||'',note:t.note||'',
+          done:t.done||false,created:t.created_at||new Date().toISOString(),checklist:localChecklist[t.id]||[]
+        });
+      });
+    }
+
+    // ── Load school calendar from Supabase ──
+    const rawCal=await sbGet('school_calendar','');
+    if(rawCal&&rawCal.length>0){
+      scData={};
+      rawCal.forEach(r=>{
+        if(!scData[r.school_code])scData[r.school_code]={};
+        const obj={};
+        if(r.type)obj.type=r.type;
+        if(r.week)obj.week=r.week;
+        if(r.hol)obj.hol=r.hol;
+        if(r.pub)obj.pub=r.pub;
+        scData[r.school_code][r.date_key]=obj;
+      });
+    }
+
+    // Also sync to localStorage as cache
+    saveData();
+    st.textContent='โหลดข้อมูลจาก Supabase ✓';
+    setTimeout(()=>{st.textContent='';},3000);
+
+  } catch(err){
+    console.warn('Supabase load failed, using localStorage:',err);
+    const didLoad=loadSavedData();
+    st.textContent=didLoad?'โหลดจาก local cache ✓':'';
+    setTimeout(()=>{st.textContent='';},3000);
+  }
+
+  updateMetrics();renderSchools();buildCalendar();renderTasks();renderFields();renderPreview();
+}
+
+boot();
+
+// ── Sidebar + Reports ─────────────────────────────────────────────
+function toggleSidebar(){
+  const sb=document.getElementById('app-sidebar');
+  if(!sb)return;
+  sb.classList.toggle('open');
+  document.body.classList.toggle('sidebar-open',sb.classList.contains('open'));
+}
+function sideSwitch(page,btn){
+  document.querySelectorAll('.side-link').forEach(b=>b.classList.remove('active'));
+  if(btn)btn.classList.add('active');
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  const topBtn=[...document.querySelectorAll('.tab')].find(t=>t.getAttribute('onclick')&&t.getAttribute('onclick').includes("'"+page+"'"));
+  if(topBtn)topBtn.classList.add('active');
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  const pageEl=document.getElementById('page-'+page);
+  if(pageEl)pageEl.classList.add('active');
+  if(page==='calendar' && typeof buildCalendar==='function')buildCalendar();
+  if(page==='schoolcal' && typeof scBuildYear==='function')scBuildYear();
+  if(page==='reports' && typeof renderReports==='function')renderReports();
+  if(page==='dashboard' && typeof renderDashboard==='function')renderDashboard();
+}
+function renderReports(){
+  if(!document.getElementById('r-health') || typeof schools==='undefined')return;
+  const total=schools.length||0;
+  const done=schools.filter(s=>s.status==='done').length;
+  const overdue=schools.filter(s=>s.status==='overdue').length;
+  const stuck=schools.filter(s=>s.status==='stuck').length;
+  const wait=schools.filter(s=>s.status==='waitchef').length;
+  const completePct=total?Math.round(done/total*100):0;
+  const health=Math.max(0,Math.min(100,completePct-(overdue*4)-(stuck*5)-(wait*2)));
+  const label=health>=80?'Healthy':health>=55?'Busy':'Needs Attention';
+  document.getElementById('r-health').textContent=health+'%';
+  document.getElementById('r-health-mini').textContent=health+'%';
+  const ring=document.querySelector('.health-ring');
+  if(ring)ring.style.setProperty('--deg',Math.round(health*3.6)+'deg');
+  document.getElementById('r-health-label').textContent=label;
+  document.getElementById('r-complete').textContent=completePct+'%';
+  document.getElementById('r-complete-bar').style.width=completePct+'%';
+  document.getElementById('r-complete-note').textContent=done+' / '+total+' schools completed';
+
+  const assignees={me:0,jr:0};
+  schools.forEach(s=>{if(assignees[s.assign]!=null)assignees[s.assign]++});
+  const maxA=Math.max(assignees.me,assignees.jr,1);
+  document.getElementById('r-workload').innerHTML=['me','jr'].map(a=>`
+    <div class="r-row"><span>${a.toUpperCase()}</span><div class="r-bar"><div style="width:${assignees[a]/maxA*100}%"></div></div><span class="r-pill">${assignees[a]}</span></div>
+  `).join('');
+
+  const statuses=['done','pending','overdue','waitchef','stuck','public'];
+  document.getElementById('r-status-bars').innerHTML=statuses.map(st=>{
+    const n=schools.filter(s=>s.status===st).length;
+    const pct=total?Math.round(n/total*100):0;
+    const label=(typeof SM!=='undefined'&&SM[st]?SM[st].l:st);
+    return `<div class="r-row"><span>${label}</span><div class="r-bar"><div style="width:${pct}%"></div></div><span class="r-pill">${n}</span></div>`;
+  }).join('');
+
+  const today=new Date();today.setHours(0,0,0,0);
+  const upcoming=schools.filter(s=>s.deadline && s.status!=='done').map(s=>{
+    const d=new Date(s.deadline+'T00:00:00');
+    return {...s,days:Math.round((d-today)/86400000)};
+  }).filter(s=>s.days>=0).sort((a,b)=>a.days-b.days).slice(0,6);
+  document.getElementById('r-upcoming').innerHTML=upcoming.length?upcoming.map(s=>`
+    <div class="r-list-item"><div><strong>${s.code}</strong> <span class="r-muted">${s.name}</span></div><span class="r-pill">${s.days===0?'Today':s.days+' days'}</span></div>
+  `).join(''):'<div class="empty">No upcoming deadlines</div>';
+
+  const weeks=['W1','W2','W3','W4','W5','W6'];
+  const maxW=Math.max(...weeks.map(w=>schools.filter(s=>s.week===w).length),1);
+  document.getElementById('r-rotation').innerHTML=weeks.map(w=>{
+    const n=schools.filter(s=>s.week===w).length;
+    return `<div class="r-row"><span>${w}</span><div class="r-bar"><div style="width:${n/maxW*100}%"></div></div><span class="r-pill">${n}</span></div>`;
+  }).join('');
+}
+
+
+function renderDashboard(){
+  if(!document.getElementById('d-health') || typeof schools==='undefined')return;
+  const total=schools.length||0, done=schools.filter(s=>s.status==='done').length, pending=schools.filter(s=>s.status==='pending').length, overdue=schools.filter(s=>s.status==='overdue').length, stuck=schools.filter(s=>s.status==='stuck').length, wait=schools.filter(s=>s.status==='waitchef').length;
+  const pct=total?Math.round(done/total*100):0, health=Math.max(0,Math.min(100,pct-(overdue*4)-(stuck*5)-(wait*2)));
+  document.getElementById('d-health').textContent=health+'%';document.getElementById('d-health-label').textContent=health>=80?'Healthy workflow':health>=55?'Busy but manageable':'Needs attention';
+  document.getElementById('d-done').textContent=done+'/'+total;document.getElementById('d-pending').textContent=pending;document.getElementById('d-overdue').textContent=overdue;
+  const dd=document.getElementById('dash-date');if(dd)dd.textContent=new Date().toLocaleDateString('en-GB',{day:'2-digit',month:'short',year:'numeric'});
+  const statuses=['done','pending','overdue','waitchef','stuck'];const maxS=Math.max(...statuses.map(st=>schools.filter(s=>s.status===st).length),1);
+  const sb=document.getElementById('d-status-bars'); if(sb)sb.innerHTML=statuses.map(st=>{const n=schools.filter(s=>s.status===st).length;const l=(typeof SM!=='undefined'&&SM[st]?SM[st].l:st);return `<div class="r-row"><span>${l}</span><div class="r-bar"><div style="width:${n/maxS*100}%"></div></div><span class="r-pill">${n}</span></div>`}).join('');
+  const ass={me:0,jr:0};schools.forEach(s=>{if(ass[s.assign]!=null)ass[s.assign]++});const maxA=Math.max(ass.me,ass.jr,1);
+  const wl=document.getElementById('d-workload'); if(wl)wl.innerHTML=['me','jr'].map(a=>`<div class="r-row"><span>${a.toUpperCase()}</span><div class="r-bar"><div style="width:${ass[a]/maxA*100}%"></div></div><span class="r-pill">${ass[a]}</span></div>`).join('');
+  const today=new Date();today.setHours(0,0,0,0);const upcoming=schools.filter(s=>s.deadline&&s.status!=='done').map(s=>({...s,days:Math.round((new Date(s.deadline+'T00:00:00')-today)/86400000)})).filter(s=>s.days>=0).sort((a,b)=>a.days-b.days).slice(0,5);
+  const up=document.getElementById('d-upcoming');if(up)up.innerHTML=upcoming.length?upcoming.map(s=>`<div class="r-list-item"><div><strong>${s.code}</strong> <span class="r-muted">${s.name}</span></div><span class="r-pill">${s.days===0?'Today':s.days+' days'}</span></div>`).join(''):'<div class="empty">No upcoming deadlines</div>';
+}
+
+setTimeout(()=>{if(typeof renderDashboard==='function')renderDashboard();},400);
+
+function keepCtxPopupInView(){
+  const p=document.getElementById('ctx-popup');
+  if(!p || !p.classList.contains('show'))return;
+  const margin=16;
+  const rect=p.getBoundingClientRect();
+  if(rect.bottom>window.innerHeight-margin){
+    p.style.top=Math.max(margin, window.innerHeight-rect.height-margin)+'px';
+  }
+  if(rect.right>window.innerWidth-margin){
+    p.style.left=Math.max(margin, window.innerWidth-rect.width-margin)+'px';
+  }
+}
+
+
+// ── School Calendar Dropdown + Team Filter ────────────────────────
+let scTeamFilter = 'all';
+
+function scGetFilteredSchools(){
+  if(typeof schools==='undefined')return [];
+  return schools
+    .filter(s => scTeamFilter==='all' || s.team===scTeamFilter)
+    .sort((a,b)=>(a.code||'').localeCompare(b.code||''));
+}
+
+function scBuildSchoolDropdown(){
+  const sel=document.getElementById('sc-school-select');
+  if(!sel || typeof schools==='undefined')return;
+  const current = (typeof scSchool!=='undefined' && scSchool) ? scSchool.code : '';
+  const list=scGetFilteredSchools();
+  sel.innerHTML = '<option value="">Select school...</option>' + list.map(s =>
+    `<option value="${s.code}" ${s.code===current?'selected':''}>${s.code} — ${s.name}</option>`
+  ).join('');
+}
+
+function scSetTeamFilter(team,btn){
+  scTeamFilter = team;
+  document.querySelectorAll('.sc-team-filter .filter-btn').forEach(b=>b.classList.remove('on'));
+  if(btn)btn.classList.add('on');
+
+  // If selected school is outside this team filter, clear it.
+  if(typeof scSchool!=='undefined' && scSchool && team!=='all' && scSchool.team!==team){
+    scSchool=null;
+    const nameLabel=document.getElementById('sc-name-label');
+    const subLabel=document.getElementById('sc-sub-label');
+    const noSchool=document.getElementById('sc-no-school');
+    const yearGrid=document.getElementById('sc-year-grid');
+    if(nameLabel)nameLabel.textContent='— Select School —';
+    if(subLabel)subLabel.textContent='Type CODE to search';
+    if(noSchool)noSchool.style.display='block';
+    if(yearGrid)yearGrid.style.display='none';
+  }
+
+  scBuildSchoolDropdown();
+
+  const search=document.getElementById('sc-search');
+  if(search && search.value.trim()) scSearch();
+
+  if(typeof scBuildYear==='function' && typeof scSchool!=='undefined' && scSchool) scBuildYear();
+}
+
+function scSelectFromDropdown(code){
+  if(!code)return;
+  const school=(typeof schools!=='undefined') ? schools.find(s=>s.code===code) : null;
+  if(!school)return;
+
+  if(typeof scSchool!=='undefined') scSchool=school;
+
+  const search=document.getElementById('sc-search');
+  const nameLabel=document.getElementById('sc-name-label');
+  const subLabel=document.getElementById('sc-sub-label');
+  const sugg=document.getElementById('sc-suggestions');
+
+  if(search)search.value=school.code;
+  if(nameLabel)nameLabel.textContent=school.code+' — '+school.name;
+  if(subLabel)subLabel.textContent=(school.team||'')+' Team · '+(school.week||'');
+  if(sugg)sugg.style.display='none';
+
+  if(typeof scBuildYear==='function')scBuildYear();
+  if(typeof scShowYear==='function')scShowYear();
+  scBuildSchoolDropdown();
+}
+
+setTimeout(()=>{if(typeof scBuildSchoolDropdown==='function')scBuildSchoolDropdown();},500);
+</script>
+</body>
+</html>
